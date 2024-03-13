@@ -42,6 +42,7 @@ while True:
                     kl = bot.klines(elem, 201)
                     utils.send(f'🟩Found BUY signal for {elem}\nPrice: '+str(kl.Close[-1])+'\nRSI: '+str(ta.momentum.RSIIndicator(kl.Close).rsi()[-1])+'\nEMA-200: '+str(ta.trend.ema_indicator(kl.Close, window=200)[-1])+'\nVolume: '+str(kl.Volume[-1]))
                     #set_mode(elem)
+                    
                     sleep(2)
                     #place_order_market(elem, 'buy')
 
