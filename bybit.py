@@ -5,14 +5,14 @@ import pandas as pd
 import telebot
 from time import sleep
 
-class bybit:
+class ByBit:
 	def __init__(self):
 		self.session = HTTP(
 		    api_key=api,
 		    api_secret=secret,
 		    testnet=False
 		)
-		self.bot = telebot.TeleBot(telegram)
+		
 			
 	# Getting balance on Bybit Derivatrives Asset (in USDT)
 	def get_balance(self):
@@ -125,7 +125,7 @@ class bybit:
 	        symbol=symbol
 	    )['result']['list'][0]['markPrice']
 	    mark_price = float(mark_price)
-	    print(f'Placing {side} order for {symbol}. Mark price: {mark_price}')
+	    return f'Placing {side} order for {symbol}. Mark price: {mark_price}'
 
 
 	    order_qty = round(qty/mark_price, qty_precision)
@@ -146,7 +146,7 @@ class bybit:
 	                slTriggerBy='Market'
 	            )
 	            print(resp)
-	            print('-----------------------------------')
+	            
 	        except Exception as err:
 	            print(err)
 
@@ -166,7 +166,7 @@ class bybit:
 	                slTriggerBy='Market'
 	            )
 	            print(resp)
-	            print('-----------------------------------')
+	            
 	        except Exception as err:
 	            print(err)
 
