@@ -1,18 +1,21 @@
 import ta
+import telebot
+
 from config import *
 
 class Utils(object):
     
     def __init__(self, bot):
-        self.bot = telebot.TeleBot(telegram)
+        self.tg = telebot.TeleBot(telegram)
+        self.bot = bot
     
     def send(self, text):
-        self.bot.send_message(channel_id, text)
+        self.tg.send_message(channel_id, text)
 
 
     # Some RSI strategy. Make your own using this example
-    def rsi_signal(symbol):
-        kl = bot.klines(symbol)
+    def rsi_signal(self, symbol):
+        kl = self.bot.klines(symbol)
         ema = ta.trend.ema_indicator(kl.Close, window=200)
         rsi = ta.momentum.RSIIndicator(kl.Close).rsi()
         if rsi.iloc[-3] < 30 and rsi.iloc[-2] < 30 and rsi.iloc[-1] > 30:
@@ -23,8 +26,8 @@ class Utils(object):
             return 'none'
 
     # William %R signal
-    def williamsR(symbol):
-        kl = bot.klines(symbol)
+    def williamsR(self, symbol):
+        kl = self.bot.klines(symbol)
         w = ta.momentum.WilliamsRIndicator(kl.High, kl.Low, kl.Close, lbp=24).williams_r()
         ema_w = ta.trend.ema_indicator(w, window=24)
         if w.iloc[-1] < -99.5:
@@ -39,4 +42,4 @@ class Utils(object):
             return 'none'
 
     def analys(elem):
-       kl = bot.klines(symbol)
+       kl = self.bot.klines(symbol)

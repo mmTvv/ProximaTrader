@@ -2,7 +2,6 @@ from config import *
 
 from pybit.unified_trading import HTTP
 import pandas as pd
-import telebot
 from time import sleep
 
 class ByBit:
@@ -38,13 +37,13 @@ class ByBit:
 
 
 	# Klines is the candles of some symbol (up to 1500 candles). Dataframe, last elem has [-1] index
-	def klines(self, symbol):
+	def klines(self, symbol, limit=500):
 	    try:
 	        resp = self.session.get_kline(
 	            category='linear',
 	            symbol=symbol,
 	            interval=timeframe,
-	            limit=500
+	            limit=limit
 	        )['result']['list']
 	        resp = pd.DataFrame(resp)
 	        resp.columns = ['Time', 'Open', 'High', 'Low', 'Close', 'Volume', 'Turnover']
@@ -125,7 +124,7 @@ class ByBit:
 	        symbol=symbol
 	    )['result']['list'][0]['markPrice']
 	    mark_price = float(mark_price)
-	    return f'Placing {side} order for {symbol}. Mark price: {mark_price}'
+	    
 
 
 	    order_qty = round(qty/mark_price, qty_precision)
@@ -166,7 +165,9 @@ class ByBit:
 	                slTriggerBy='Market'
 	            )
 	            print(resp)
-	            
+	       
 	        except Exception as err:
 	            print(err)
+
+	    return {'side': side, 'symbol': symbol, 'price': mark_price}
 

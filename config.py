@@ -16,5 +16,5 @@ api = "zD9ySkpgxmWRD0pRXH"
 secret = "kkWopoFnj67S2lFNpARXhxBYtFSEpHWcO4Wo"
 
 #Binance key-lines
-api = ''
-secret = ''
+api_bin = ''
+secret_bin = ''
