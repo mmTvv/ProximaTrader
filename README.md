@@ -2,6 +2,6 @@
 
 Example scalp script
 
-##START
+## START
 
 Rewrite `config.py.exmaple` to `config.py` and write your tokens and sitings in file
