@@ -7,6 +7,12 @@ leverage = 10			# leverage (big iq move)
 qty = 5    				# Amount of USDT for one order
 max_pos = 100  			# Max current orders
 
+bb_std = 2
+bb_ticks = 4
+
+stochastic_d = 3
+stochastic_k = 14
+
 #social settings
 telegram = ""
 channel_id = ''
@@ -16,5 +22,5 @@ api = ""
 secret = ""
 
 #Binance key-lines
-api = ''
-secret = ''
+bi_api = ''
+bi_secret = ''

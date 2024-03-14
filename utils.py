@@ -12,6 +12,8 @@ class Utils(object):
     def send(self, text):
         self.tg.send_message(channel_id, text)
 
+    def watcher(self, symbol):
+        pass
 
     # Some RSI strategy. Make your own using this example
     def rsi_signal(self, symbol):
@@ -41,5 +43,37 @@ class Utils(object):
         else:
             return 'none'
 
-    def analys(elem):
-       kl = self.bot.klines(symbol)
+
+    def RES(self, elem, timeframe):
+        kl = self.bot.klines(symbol=elem, timeframe=timeframe)
+        # Initialize Bollinger Bands Indicator
+        indicator_bb = ta.volatility.BollingerBands(close=kl["Close"], window=bb_ticks, window_dev=bb_std)
+
+        # Add Bollinger Band high indicator
+        upper_band = indicator_bb.bollinger_hband_indicator().iloc[-1]
+
+        # Add Bollinger Band low indicator
+        lower_band = indicator_bb.bollinger_lband_indicator().iloc[-1]
+
+        rsi = ta.momentum.RSIIndicator(kl.Close).rsi().iloc[-1]
+
+        ema = ta.trend.ema_indicator(kl.Close, window=100).iloc[-1]
+
+        percent_k = ta.momentum.StochasticOscillator(high=kl.High, low = kl.Low, close=kl.Close, window=14).stoch()
+
+        percent_d = ta.trend.SMAIndicator(percent_k, window=3).sma_indicator().iloc[-1]
+
+        support_level = min(kl.Close[-20:])
+
+        resistance_level = max(kl.Close[-20:])
+
+        current_price = kl.Close.iloc[-1]
+        print(elem+rsi+current_price+percent_k.iloc[-1]+support_level)
+        if rsi < 70 and rsi >55  and current_price > ema and percent_k.iloc[-1] > percent_d and current_price > support_level and current_price < upper_band:
+            return 'up'
+
+        elif rsi > 70 and current_price < ema and current_price < resistance_level and current_price > lower_band:
+            return 'down'
+
+        else:
+            return 'none'

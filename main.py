@@ -36,11 +36,13 @@ while True:
                     break
 
                 # Signal to buy or sell
-                signal = utils.williamsR(elem)
+                signal = utils.RES(elem, 60)
                 
                 if signal == 'up':
                     kl = bot.klines(elem, 201)
-                    utils.send(f'🟩Found BUY signal for {elem}\nPrice: '+str(kl.Close[-1])+'\nRSI: '+str(ta.momentum.RSIIndicator(kl.Close).rsi()[-1])+'\nEMA-200: '+str(ta.trend.ema_indicator(kl.Close, window=200)[-1])+'\nVolume: '+str(kl.Volume[-1]))
+                    rsi = ta.momentum.RSIIndicator(kl.Close).rsi()
+                    ema = ta.trend.ema_indicator(kl.Close, window=200)
+                    utils.send(f'🟩Found BUY signal for `{elem}`\nPrice: '+str(kl.Close.iloc[-1])+'\nRSI: '+str(rsi.iloc[-1])+'\nEMA-200: '+str(ema.iloc[-1])+'\nVolume: '+str(kl.Volume.iloc[-1]))
                     #set_mode(elem)
                     
                     sleep(2)
@@ -50,7 +52,9 @@ while True:
 
                 if signal == 'down':
                     kl = bot.klines(elem, 201)
-                    utils.send(f'🟥Found SELL signal for {elem}\nPrice: '+str(kl.Close[-1])+'\nRSI: '+str(ta.momentum.RSIIndicator(kl.Close).rsi()[-1])+'\nEMA-200: '+str(ta.trend.ema_indicator(kl.Close, window=200)[-1])+'\nVolume: '+str(kl.Volume[-1]))
+                    rsi = ta.momentum.RSIIndicator(kl.Close).rsi()
+                    ema = ta.trend.ema_indicator(kl.Close, window=200)
+                    utils.send(f'🟥Found SELL signal for `{elem}`\nPrice: '+str(kl.Close.iloc[-1])+'\nRSI: '+str(rsi.iloc[-1])+'\nEMA-200: '+str(ema.iloc[-1])+'\nVolume: '+str(kl.Volume.iloc[-1]))
                     #set_mode(elem)
                     sleep(2)
                     #place_order_market(elem, 'sell')
