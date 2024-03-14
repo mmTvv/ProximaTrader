@@ -1,5 +1,6 @@
 import ta
 import telebot
+from datetime import datetime
 
 from config import *
 
@@ -12,8 +13,20 @@ class Utils(object):
     def send(self, text):
         self.tg.send_message(channel_id, text)
 
-    def watcher(self, symbol):
-        pass
+    def watcher(self, symbol, side):
+        kl = self.bot.klines(symbol)
+        start_price = kl[-1]
+        time = datetime.now().timetuple()
+        while True:
+            rsi = ta.momentum.RSIIndicator(kl.Close).rsi().inloc[-1]
+            if side == 'buy' and rsi <70:
+                kl = self.bot.klines(symbol)
+                current_price = kl[-1]
+                self.tg.send('🟢Сделка BUY закрыта. \nВремя Открытия: '+ str(time[2]+'.'+time[1]+ ' '+time[3]+':'+time[4])+ '\nP&L: ' +str((current_price - start_price )* 10))
+            if side == 'sell' and rsi >30:
+                kl = self.bot.klines(symbol)
+                current_price = kl[-1]
+                self.tg.send('🔴Сделка SELL закрыта. \nВремя Открытия: '+ str(time[2]+'.'+time[1]+ ' '+time[3]+':'+time[4])+ '\nP&L: ' +str((start_price - current_price )* 10))
 
     # Some RSI strategy. Make your own using this example
     def rsi_signal(self, symbol):
@@ -68,8 +81,10 @@ class Utils(object):
         resistance_level = max(kl.Close[-20:])
 
         current_price = kl.Close.iloc[-1]
-        print(elem+rsi+current_price+percent_k.iloc[-1]+support_level)
-        if rsi < 70 and rsi >55  and current_price > ema and percent_k.iloc[-1] > percent_d and current_price > support_level and current_price < upper_band:
+
+        
+        print(elem + ' ' + str(rsi < 70) + ' ' +str(rsi >50) + ' ' +str(current_price > ema) + ' ' +str(percent_k.iloc[-1] > percent_d) + ' ' +str(current_price > support_level) +' ' + str(current_price < upper_band))
+        if rsi < 70 and rsi >55  and current_price > ema and percent_k.iloc[-1] > percent_d and current_price > support_level:
             return 'up'
 
         elif rsi > 70 and current_price < ema and current_price < resistance_level and current_price > lower_band:

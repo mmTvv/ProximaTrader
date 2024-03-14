@@ -36,7 +36,7 @@ while True:
                     break
 
                 # Signal to buy or sell
-                signal = utils.RES(elem, 60)
+                signal = utils.RES(elem=elem, timeframe = 'D')
                 
                 if signal == 'up':
                     kl = bot.klines(elem, 201)

@@ -37,7 +37,7 @@ class ByBit:
 
 
 	# Klines is the candles of some symbol (up to 1500 candles). Dataframe, last elem has [-1] index
-	def klines(self, symbol, limit=500, timeframe=15):
+	def klines(self, symbol, limit=500, timeframe="D"):
 	    try:
 	        resp = self.session.get_kline(
 	            category='linear',
