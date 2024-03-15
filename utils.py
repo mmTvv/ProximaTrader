@@ -21,15 +21,15 @@ class Utils(object):
         while True:
             sleep(30)
             kl = self.bot.klines(symbol)
-            rsi = ta.momentum.RSIIndicator(kl.Close).rsi().iloc[-1]
-            if side == 'buy' and rsi <70:
+            rsi = ta.momentum.RSIIndicator(kl.Close).rsi()
+            if side == 'buy' and rsi.iloc[-3] > 70 and rsi.iloc[-1] < 70:
                 current_price = kl.Close.iloc[-1]
                 pnl = round(( (10/start_price) - (10/current_price) ) *10 *current_price , 3)
                 if pnl>0: icon = '🟢'
                 elif pnl<=0: icon = '🔴'
                 self.send(icon +'Сделка BUY '+ symbol +' закрыта. \nВремя Открытия: '+ str(str(time[2])+'.'+str(time[1])+ ' '+str(time[3])+':'+str(time[4]))+ '\nP&L: ' +str(pnl)+'%')
                 break
-            elif side == 'sell' and rsi >30:
+            elif side == 'sell' and rsi.iloc[-3] < 30 and rsi.iloc[-1] > 30:
                 current_price = kl.Close.iloc[-1]
                 pnl = round(( (10/current_price) - (10/start_price) ) *10 *current_price , 3)
                 if pnl>0: icon = '🟢'
