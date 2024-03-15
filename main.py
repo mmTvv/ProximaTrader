@@ -4,7 +4,7 @@ import bybit
 import pandas as pd
 import ta
 from time import sleep
-
+import threading as th
 
 bot = bybit.ByBit()
 utils = utils.Utils(bot)
@@ -36,7 +36,7 @@ while True:
                     break
 
                 # Signal to buy or sell
-                signal = utils.RES(elem=elem, timeframe = 'D')
+                signal = utils.rsi_signal(symbol=elem)
                 
                 if signal == 'up':
                     kl = bot.klines(elem, 201)
@@ -47,7 +47,7 @@ while True:
                     
                     sleep(2)
                     #place_order_market(elem, 'buy')
-
+                    th.Thread(target=utils.watcher, args=(elem, 'buy', )).start()
                     sleep(5)
 
                 if signal == 'down':
@@ -58,9 +58,9 @@ while True:
                     #set_mode(elem)
                     sleep(2)
                     #place_order_market(elem, 'sell')
-                    
+                    th.Thread(target=utils.watcher, args=(elem, 'sell', )).start()
                     sleep(5)
 
 
-    print('Waiting 2 mins')
-    sleep(120)
+    print('Отдых')
+    sleep(1200)

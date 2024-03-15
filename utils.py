@@ -1,6 +1,7 @@
 import ta
 import telebot
 from datetime import datetime
+from time import sleep
 
 from config import *
 
@@ -15,22 +16,30 @@ class Utils(object):
 
     def watcher(self, symbol, side):
         kl = self.bot.klines(symbol)
-        start_price = kl[-1]
+        start_price = kl.Close.iloc[-1]
         time = datetime.now().timetuple()
         while True:
-            rsi = ta.momentum.RSIIndicator(kl.Close).rsi().inloc[-1]
+            sleep(30)
+            kl = self.bot.klines(symbol)
+            rsi = ta.momentum.RSIIndicator(kl.Close).rsi().iloc[-1]
             if side == 'buy' and rsi <70:
-                kl = self.bot.klines(symbol)
-                current_price = kl[-1]
-                self.tg.send('🟢Сделка BUY закрыта. \nВремя Открытия: '+ str(time[2]+'.'+time[1]+ ' '+time[3]+':'+time[4])+ '\nP&L: ' +str((current_price - start_price )* 10))
-            if side == 'sell' and rsi >30:
-                kl = self.bot.klines(symbol)
-                current_price = kl[-1]
-                self.tg.send('🔴Сделка SELL закрыта. \nВремя Открытия: '+ str(time[2]+'.'+time[1]+ ' '+time[3]+':'+time[4])+ '\nP&L: ' +str((start_price - current_price )* 10))
+                current_price = kl.Close.iloc[-1]
+                pnl = round(( (10/start_price) - (10/current_price) ) *10 *current_price , 3)
+                if pnl>0: icon = '🟢'
+                elif pnl<=0: icon = '🔴'
+                self.send(icon +'Сделка BUY '+ symbol +' закрыта. \nВремя Открытия: '+ str(str(time[2])+'.'+str(time[1])+ ' '+str(time[3])+':'+str(time[4]))+ '\nP&L: ' +str(pnl)+'%')
+                break
+            elif side == 'sell' and rsi >30:
+                current_price = kl.Close.iloc[-1]
+                pnl = round(( (10/current_price) - (10/start_price) ) *10 *current_price , 3)
+                if pnl>0: icon = '🟢'
+                elif pnl<=0: icon = '🔴'
+                self.send(icon + 'Сделка SELL '+ symbol +' закрыта. \nВремя Открытия: '+ str(str(time[2])+'.'+str(time[1])+ ' '+str(time[3])+':'+str(time[4]))+ '\nP&L: ' +str(pnl)+'%')
+                break
 
     # Some RSI strategy. Make your own using this example
-    def rsi_signal(self, symbol):
-        kl = self.bot.klines(symbol)
+    def rsi_signal(self, symbol, timeframe='D'):
+        kl = self.bot.klines(symbol, timeframe=timeframe)
         ema = ta.trend.ema_indicator(kl.Close, window=200)
         rsi = ta.momentum.RSIIndicator(kl.Close).rsi()
         if rsi.iloc[-3] < 30 and rsi.iloc[-2] < 30 and rsi.iloc[-1] > 30:
@@ -41,8 +50,8 @@ class Utils(object):
             return 'none'
 
     # William %R signal
-    def williamsR(self, symbol):
-        kl = self.bot.klines(symbol)
+    def williamsR(self, symbol,timeframe='D'):
+        kl = self.bot.klines(symbol,timeframe=timeframe)
         w = ta.momentum.WilliamsRIndicator(kl.High, kl.Low, kl.Close, lbp=24).williams_r()
         ema_w = ta.trend.ema_indicator(w, window=24)
         if w.iloc[-1] < -99.5:
@@ -57,8 +66,8 @@ class Utils(object):
             return 'none'
 
 
-    def RES(self, elem, timeframe):
-        kl = self.bot.klines(symbol=elem, timeframe=timeframe)
+    def RES(self, symbol, timeframe):
+        kl = self.bot.klines(symbol=symbol, timeframe=timeframe)
         # Initialize Bollinger Bands Indicator
         indicator_bb = ta.volatility.BollingerBands(close=kl["Close"], window=bb_ticks, window_dev=bb_std)
 
@@ -83,7 +92,7 @@ class Utils(object):
         current_price = kl.Close.iloc[-1]
 
         
-        print(elem + ' ' + str(rsi < 70) + ' ' +str(rsi >50) + ' ' +str(current_price > ema) + ' ' +str(percent_k.iloc[-1] > percent_d) + ' ' +str(current_price > support_level) +' ' + str(current_price < upper_band))
+        print(symbol + ' ' + str(rsi < 70) + ' ' +str(rsi >50) + ' ' +str(current_price > ema) + ' ' +str(percent_k.iloc[-1] > percent_d) + ' ' +str(current_price > support_level) +' ' + str(current_price < upper_band))
         if rsi < 70 and rsi >55  and current_price > ema and percent_k.iloc[-1] > percent_d and current_price > support_level:
             return 'up'
 
