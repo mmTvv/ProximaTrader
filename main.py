@@ -5,9 +5,11 @@ import pandas as pd
 import ta
 from time import sleep
 import threading as th
+from analitic import analitic
 
 bot = bybit.ByBit()
 utils = utils.Utils(bot)
+analitic = analitic.main()
 
 symbols = bot.get_tickers()     # getting all symbols from the Bybit Derivatives
 
@@ -36,7 +38,7 @@ while True:
                     break
 
                 # Signal to buy or sell
-                signal = utils.rsi_signal(symbol=elem, timeframe=15)
+                signal = analitic.main(symbol=elem, timeframe=15)
                 
                 if signal == 'up':
                     kl = bot.klines(elem, 201)
