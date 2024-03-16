@@ -36,7 +36,7 @@ while True:
                     break
 
                 # Signal to buy or sell
-                signal = utils.rsi_signal(symbol=elem)
+                signal = utils.rsi_signal(symbol=elem, timeframe=15)
                 
                 if signal == 'up':
                     kl = bot.klines(elem, 201)
@@ -47,7 +47,10 @@ while True:
                     
                     sleep(2)
                     #place_order_market(elem, 'buy')
+
                     th.Thread(target=utils.watcher, args=(elem, 'buy', )).start()
+                    pos.append(elem)
+
                     sleep(5)
 
                 if signal == 'down':
@@ -58,7 +61,10 @@ while True:
                     #set_mode(elem)
                     sleep(2)
                     #place_order_market(elem, 'sell')
+
                     th.Thread(target=utils.watcher, args=(elem, 'sell', )).start()
+                    pos.append(elem)
+
                     sleep(5)
 
 
