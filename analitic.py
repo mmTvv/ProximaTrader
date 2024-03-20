@@ -1,7 +1,6 @@
 import time
 
 class analitic:
-	"""docstring for ClassName"""
 	def __init__(self, bot):
 		self.bot = bot
 
