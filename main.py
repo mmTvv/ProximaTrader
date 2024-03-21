@@ -9,7 +9,7 @@ from analitic import analitic
 
 bot = bybit.ByBit()
 utils = utils.Utils(bot)
-analitic = analitic.main()
+analitic = analitic(bot)
 
 symbols = bot.get_tickers()     # getting all symbols from the Bybit Derivatives
 
@@ -38,10 +38,10 @@ while True:
                     break
 
                 # Signal to buy or sell
-                signal = analitic.main(symbol=elem, timeframe=15)
+                signal = analitic.main(symbol=elem, timeframe=240)
                 
                 if signal == 'up':
-                    kl = bot.klines(elem, 201)
+                    kl = bot.klines(symbol=elem, limit=201)
                     rsi = ta.momentum.RSIIndicator(kl.Close).rsi()
                     ema = ta.trend.ema_indicator(kl.Close, window=200)
                     utils.send(f'🟩Found BUY signal for `{elem}`\nPrice: '+str(kl.Close.iloc[-1])+'\nRSI: '+str(rsi.iloc[-1])+'\nEMA-200: '+str(ema.iloc[-1])+'\nVolume: '+str(kl.Volume.iloc[-1]))
@@ -50,7 +50,7 @@ while True:
                     sleep(2)
                     #place_order_market(elem, 'buy')
 
-                    th.Thread(target=utils.watcher, args=(elem, 'buy', )).start()
+                    th.Thread(target=utils.watcher, args=(elem, 'buy', 240,)).start()
                     pos.append(elem)
 
                     sleep(5)
@@ -64,7 +64,7 @@ while True:
                     sleep(2)
                     #place_order_market(elem, 'sell')
 
-                    th.Thread(target=utils.watcher, args=(elem, 'sell', )).start()
+                    th.Thread(target=utils.watcher, args=(elem, 'sell', 240,)).start()
                     pos.append(elem)
 
                     sleep(5)
