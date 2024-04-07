@@ -74,23 +74,27 @@ class analitic:
 		return support_level, resistance_level
 
 	def main(self, symbol, timeframe):
-		# Проверка RSI, EMA, Stochastic, Support, and Resistance for the symbol
-		rsi = self.calculate_rsi(symbol)
-		ema = self.calculate_ema(symbol)
-		percent_k, percent_d = self.calculate_stochastic(symbol)
-		support_level, resistance_level = self.calculate_support_resistance(symbol)
-		current_price = self.bot.klines(symbol=symbol, limit=1).Close.iloc[-1]
-		upper_band, lower_band = self.calculate_bollinger_bands(symbol)
-		print(f"{symbol} RSI: {rsi}, EMA: {ema}, Stochastic (%K, %D): {percent_k}, {percent_d}, Current Price: {current_price}")
+		try:
+			# Проверка RSI, EMA, Stochastic, Support, and Resistance for the symbol
+			rsi = self.calculate_rsi(symbol)
+			ema = self.calculate_ema(symbol)
+			percent_k, percent_d = self.calculate_stochastic(symbol)
+			support_level, resistance_level = self.calculate_support_resistance(symbol)
+			current_price = self.bot.klines(symbol=symbol, limit=1).Close.iloc[-1]
+			upper_band, lower_band = self.calculate_bollinger_bands(symbol)
+			print(f"{symbol} RSI: {rsi}, EMA: {ema}, Stochastic (%K, %D): {percent_k}, {percent_d}, Current Price: {current_price}")
 
-		# Check for long signal conditions
-		if rsi < 70 and rsi >55  and current_price > ema and percent_k > percent_d and current_price > support_level and current_price < upper_band:
-			# Replace 0.001 with your desired quantity
-			return 'long'
-		# Check for short signal conditions
-		elif rsi > 70 and current_price < ema and current_price < resistance_level and current_price > lower_band:
-			# Replace 0.001 with your desired quantity
-			return 'short'
+			# Check for long signal conditions
+			if rsi < 70 and rsi >55  and current_price > ema and percent_k > percent_d and current_price > support_level and current_price < upper_band:
+				# Replace 0.001 with your desired quantity
+				return 'long'
+			# Check for short signal conditions
+			elif rsi > 70 and current_price < ema and current_price < resistance_level and current_price > lower_band:
+				# Replace 0.001 with your desired quantity
+				return 'short'
+
+		except Exception as err:
+			print(f'[ERROR]: {symbol} skipped')
 
 
 	
