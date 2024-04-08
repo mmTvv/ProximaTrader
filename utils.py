@@ -31,7 +31,7 @@ class Utils(object):
 
                     self.send(icon +'Сделка BUY '+ symbol +' закрыта. \nВремя Открытия: '+ str(str(time[2])+'.'+str(time[1])+ ' '+str(time[3])+':'+str(time[4]))+ '\nP&L x10: ' +str(pnl)+'%')
                     break
-                elif side == 'sell' and pnl < -20 or pnl >50:
+                elif side == 'sell' and -pnl < 20 or -pnl >-50:
                     
                     if -pnl>0: icon = '🟢'
                     elif -pnl<=0: icon = '🔴'
