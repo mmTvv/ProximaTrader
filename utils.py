@@ -16,6 +16,7 @@ class Utils(object):
         self.tg.send_message(channel_id, text)
 
     def watcher(self, symbol, side):
+        
         try:
             kl = self.bot.klines(symbol, timeframe=timeframe, limit = 1)
             start_price = kl.Close.iloc[-1]

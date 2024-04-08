@@ -43,10 +43,10 @@ while True:
                     
                     th.Thread(target=utils.watcher, args=(elem, 'buy', )).start()
 
-                    set_mode(elem)
+                    #bot.set_mode(elem)
                     
                     sleep(2)
-                    place_order_market(elem, 'buy')
+                    #bot.place_order_market(elem, 'buy')
 
                     sleep(5)
 
@@ -56,9 +56,9 @@ while True:
                     utils.send(f'🟥Found SELL signal for {elem}\nPrice: '+str(kl.Close.iloc[-1]))
                     
                     th.Thread(target=utils.watcher, args=(elem, 'sell', )).start()
-                    set_mode(elem)
+                    #bot.set_mode(elem)
                     sleep(2)
-                    place_order_market(elem, 'sell')
+                    #bot.place_order_market(elem, 'sell')
 
                     sleep(5)
 
