@@ -11,6 +11,8 @@ class ByBit:
 			api_secret=secret,
 			testnet=False
 		)
+		self.pos = 0
+		self.closed = 0 
 		
 			
 	# Getting balance on Bybit Derivatrives Asset (in USDT)
