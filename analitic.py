@@ -1,10 +1,11 @@
 import time, ta
+from config import *
 
 class analitic:
 	def __init__(self, bot):
 		self.bot = bot
 
-	def calculate_bollinger_bands(self, symbol, timeframe='D', period=20, num_std_dev=2):
+	def calculate_bollinger_bands(self, symbol, timeframe=timeframe, period=20, num_std_dev=2):
 		ohlcv = self.bot.kline(symbol, timeframe, limit=period)
 		closes = [tick[4] for tick in ohlcv]
 
@@ -20,7 +21,7 @@ class analitic:
 
 		return upper_band, lower_band
 
-	def calculate_rsi(self, symbol, timeframe='D',period=14):
+	def calculate_rsi(self, symbol, timeframe=timeframe,period=14):
 		ohlcv = self.bot.kline(symbol, timeframe, limit=period)
 		closes = [tick[4] for tick in ohlcv]
 		changes = [closes[i] - closes[i - 1] for i in range(1, len(closes))]
@@ -36,7 +37,7 @@ class analitic:
 			rs = avg_gain / avg_loss
 			return 100 - (100 / (1 + rs))
 
-	def calculate_ema(self,symbol, timeframe='D', period=100):
+	def calculate_ema(self,symbol, timeframe=timeframe, period=100):
 		ohlcv = self.bot.kline(symbol, timeframe, limit=period)
 		closes = [tick[4] for tick in ohlcv]
 
@@ -49,7 +50,7 @@ class analitic:
 
 		return ema_values[-1]
 
-	def calculate_stochastic(self,symbol, timeframe='D', k_period=14, d_period=3):
+	def calculate_stochastic(self,symbol, timeframe=timeframe, k_period=14, d_period=3):
 		ohlcv = self.bot.kline(symbol, timeframe, limit=k_period + d_period)
 		closes = [tick[4] for tick in ohlcv]
 
@@ -64,7 +65,7 @@ class analitic:
 
 		return percent_k, percent_d
 
-	def calculate_support_resistance(self,symbol, timeframe='D', window=20):
+	def calculate_support_resistance(self,symbol, timeframe=timeframe, window=20):
 		ohlcv = self.bot.kline(symbol, timeframe)
 		closes = [tick[4] for tick in ohlcv]
 

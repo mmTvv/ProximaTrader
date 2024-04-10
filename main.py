@@ -49,7 +49,7 @@ while True:
                     sleep(2)
                     #bot.place_order_market(elem, 'buy')
 
-                    sleep(5)
+                    sleep(10)
 
                 if signal == 'short':
                     utils.poss.append(elem)
@@ -62,7 +62,7 @@ while True:
                     sleep(2)
                     #bot.place_order_market(elem, 'sell')
 
-                    sleep(5)
+                    sleep(10)
 
 
     print('Отдых')
