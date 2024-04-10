@@ -28,7 +28,7 @@ class Utils(object):
                 sleep(120)
                 current_price = self.bot.klines(symbol, timeframe=timeframe, limit=1).Close.iloc[-1]
                 pnl = round((current_price/(start_price / 100))-100, 2)*10
-                if side == 'buy' and pnl > 20 or pnl < -30:
+                if side == 'buy' and pnl > 20 or pnl < -5:
                     
                     if pnl>0: icon = '🟢'
                     elif pnl<=0: icon = '🔴'
@@ -37,7 +37,7 @@ class Utils(object):
                     self.closed +=1
                     self.poss.remove(symbol)
                     break
-                elif side == 'sell' and pnl < -20 or pnl >30:
+                elif side == 'sell' and pnl < -20 or pnl >5:
                     
                     if -pnl>0: icon = '🟢'
                     elif -pnl<=0: icon = '🔴'

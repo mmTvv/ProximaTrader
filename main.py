@@ -66,4 +66,4 @@ while True:
 
 
     print('Отдых')
-    sleep(1200)
+    sleep(60*60*4)
