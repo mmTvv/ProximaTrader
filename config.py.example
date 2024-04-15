@@ -1,11 +1,11 @@
 # Config:
-tp = 0.012  			# Take Profit +1.2%
-sl = 0.009  			# Stop Loss -0.9%
+tp = 0.020  			# Take Profit +1.2%
+sl = 0.050 			# Stop Loss -0.9%
 timeframe = 'D'  		# 15 minutes
 mode = 1  				# 1 - Isolated, 0 - Cross
 leverage = 10			# leverage (big iq move)
-qty = 3    				# Amount of USDT for one order
-max_pos = 240  			# Max current orders
+qty = 5    				# Amount of USDT for one order
+max_pos = 200  			# Max current orders
 
 
 #social settings
