@@ -40,7 +40,7 @@ while True:
                 if signal == 'long':
                     utils.poss.append(symbol)
                     kl = bot.klines(symbol=symbol, limit=1)
-                    utils.send(f'🟩Found BUY signal fr #{symbol}\nPrice: '+str(kl.Close.iloc[-1])+'\nPOS count: '+str(utils.pos) +'\nPOS closed: '+str(utils.closed))
+                    utils.send(f'🟩 BUY - #{symbol}\nprice: '+str(kl.Close.iloc[-1])+'\norders: '+str(utils.pos) +'\nclosed: '+str(utils.closed))
                     
                     th.Thread(target=utils.watcher, args=(symbol, 'buy', )).start()
 
@@ -55,7 +55,7 @@ while True:
                     utils.poss.append(symbol)
 
                     kl = bot.klines(symbol=symbol, limit=1)
-                    utils.send(f'🟥Found SELL signal or #{symbol}\nPrice: '+str(kl.Close.iloc[-1])+'\nPOS count: '+str(utils.pos) +'\nPOS closed: '+str(utils.closed))
+                    utils.send(f'🟥 SELL - #{symbol}\nprice: '+str(kl.Close.iloc[-1])+'\norders: '+str(utils.pos) +'\nclosed: '+str(utils.closed))
                     
                     th.Thread(target=utils.watcher, args=(symbol, 'sell', )).start()
                     #bot.set_mode(symbol)

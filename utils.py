@@ -13,8 +13,8 @@ class Utils(object):
         self.bot = bot
         self.analitic = analitic(bot)
 
-        self.pos = 1
-        self.closed = 1
+        self.pos = 0
+        self.closed = 0
         self.poss = []
         self.pnl = 0
         self.summary_pnl = 0
@@ -40,11 +40,13 @@ class Utils(object):
                     if pnl>0: icon = '✔️'
                     elif pnl<=0: icon = '🚫'
 
-                    self.send(icon +'Сделка BUY #'+ symbol +' закрыта. \nВремя Открытия: '+ str(str(time[2])+'.'+str(time[1])+ ' '+str(time[3])+':'+str(time[4]))+ '\nP&L x10: ' +str(pnl)+'%\nOPEN: '+str(start_price)+'\nCLOSE: '+str(current_price)+'\nTotal PNL: '+str(self.pnl))
                     self.closed +=1
                     self.summary_pnl = (self.summary_pnl + round(pnl, 2))
-                    self.pnl = summary_pnl/self.closed
+                    self.pnl = self.summary_pnl/self.closed
                     self.poss.remove(symbol)
+
+                    self.send(icon +'Сделка BUY #'+ symbol +' закрыта. \nВремя Открытия: '+ str(str(time[2])+'.'+str(time[1])+ ' '+str(time[3])+':'+str(time[4]))+ '\nP&L x10: ' +str(pnl)+'%\nOPEN: '+str(start_price)+'\nCLOSE: '+str(current_price)+'\nTotal PNL: '+str(self.pnl))
+                    
                     break
                 elif side == 'sell' and status != 'short':
                     current_price = self.bot.klines(symbol, timeframe=timeframe, limit=1).Close.iloc[-1]
@@ -52,11 +54,13 @@ class Utils(object):
                     if -pnl>0: icon = '✔️'
                     elif -pnl<=0: icon = '🚫'
 
-                    self.send(icon + 'Сделка SELL #'+ symbol +' закрыта. \nВремя Открытия: '+ str(str(time[2])+'.'+str(time[1])+ ' '+str(time[3])+':'+str(time[4]))+ '\nP&L x10: ' +str(-pnl)+'%\nOPEN: '+str(start_price)+'\nCLOSE: '+str(current_price)+'\nTotal PNL: '+str(self.pnl))
                     self.closed +=1
                     self.summary_pnl = (self.summary_pnl + round(-pnl, 2))
-                    self.pnl = summary_pnl / self.closed
+                    self.pnl = self.summary_pnl / self.closed
                     self.poss.remove(symbol)
+
+                    self.send(icon + 'Сделка SELL #'+ symbol +' закрыта. \nВремя Открытия: '+ str(str(time[2])+'.'+str(time[1])+ ' '+str(time[3])+':'+str(time[4]))+ '\nP&L x10: ' +str(-pnl)+'%\nOPEN: '+str(start_price)+'\nCLOSE: '+str(current_price)+'\nTotal PNL: '+str(self.pnl))
+                    
                     break
 
         except Exception as err:
