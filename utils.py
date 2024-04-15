@@ -13,7 +13,7 @@ class Utils(object):
         self.bot = bot
         self.pos = 0
         self.closed = 0 
-        self.poss = []
+        self.poss = self.bot.get_tickers()
         self.analitic = analitic(bot)
     
     def send(self, text):
