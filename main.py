@@ -22,7 +22,7 @@ while True:
     if balance == None:
         print('Cant connect to API')
 
-    if balance != None and float(balance) > qty/leverage:
+    if balance != None: #and float(balance) > qty/leverage:
 
         balance = float(balance)
         pos = bot.get_positions()
@@ -40,29 +40,29 @@ while True:
                 if signal == 'long':
                     utils.poss.append(elem)
                     kl = bot.klines(symbol=elem, limit=1)
-                    utils.send(f'🟩Found BUY signal for {elem}\nPrice: '+str(kl.Close.iloc[-1])+'\nPOS count: '+str(utils.pos) +'\nPOS closed: '+str(utils.closed))
+                    utils.send(f'🟩Found BUY signal fr #{elem}\nPrice: '+str(kl.Close.iloc[-1])+'\nPOS count: '+str(utils.pos) +'\nPOS closed: '+str(utils.closed))
                     
                     th.Thread(target=utils.watcher, args=(elem, 'buy', )).start()
 
                     #bot.set_mode(elem)
                     
-                    sleep(2)
+                    #sleep(2)
                     #bot.place_order_market(elem, 'buy')
 
-                    sleep(10)
+                    sleep(5)
 
                 if signal == 'short':
                     utils.poss.append(elem)
 
                     kl = bot.klines(symbol=elem, limit=1)
-                    utils.send(f'🟥Found SELL signal for {elem}\nPrice: '+str(kl.Close.iloc[-1])+'\nPOS count: '+str(utils.pos) +'\nPOS closed: '+str(utils.closed))
+                    utils.send(f'🟥Found SELL signal or #{elem}\nPrice: '+str(kl.Close.iloc[-1])+'\nPOS count: '+str(utils.pos) +'\nPOS closed: '+str(utils.closed))
                     
                     th.Thread(target=utils.watcher, args=(elem, 'sell', )).start()
                     #bot.set_mode(elem)
-                    sleep(2)
+                    #sleep(2)
                     #bot.place_order_market(elem, 'sell')
 
-                    sleep(10)
+                    sleep(5)
 
 
     print('Отдых')
