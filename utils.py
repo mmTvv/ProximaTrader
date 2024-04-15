@@ -11,9 +11,9 @@ class Utils(object):
     def __init__(self, bot):
         self.tg = telebot.TeleBot(telegram)
         self.bot = bot
-        self.pos = 0
-        self.closed = 0 
-        self.poss = self.bot.get_tickers()
+        self.pos = 1
+        self.closed = 1
+        self.poss = []
         self.analitic = analitic(bot)
     
     def send(self, text):

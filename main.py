@@ -31,8 +31,8 @@ while True:
             # Checking every symbol from the symbols list:
             for symbol in symbols:
                 pos = bot.get_positions()
-                if len(pos) >= max_pos and symbol in utils.poss:
-                    break
+                if symbol in utils.poss:
+                    print(f'[INFO]: order for {symbol} has already been created')
 
                 # Signal to buy or sell
                 signal = analitic.main(symbol=symbol, timeframe=timeframe )
@@ -66,4 +66,4 @@ while True:
 
 
     print('Отдых')
-    sleep(60*60*4)
+    sleep(60*60*12)
