@@ -11,10 +11,14 @@ class Utils(object):
     def __init__(self, bot):
         self.tg = telebot.TeleBot(telegram)
         self.bot = bot
+        self.analitic = analitic(bot)
+
         self.pos = 1
         self.closed = 1
         self.poss = []
-        self.analitic = analitic(bot)
+        self.pnl = 0
+        self.summary_pnl = 0
+        
     
     def send(self, text):
         self.tg.send_message(channel_id, text)
@@ -36,8 +40,10 @@ class Utils(object):
                     if pnl>0: icon = '✔️'
                     elif pnl<=0: icon = '🚫'
 
-                    self.send(icon +'Сделка BUY #'+ symbol +' закрыта. \nВремя Открытия: '+ str(str(time[2])+'.'+str(time[1])+ ' '+str(time[3])+':'+str(time[4]))+ '\nP&L x10: ' +str(pnl)+'%\nOPEN: '+str(start_price)+'\nCLOSE: '+str(current_price))
+                    self.send(icon +'Сделка BUY #'+ symbol +' закрыта. \nВремя Открытия: '+ str(str(time[2])+'.'+str(time[1])+ ' '+str(time[3])+':'+str(time[4]))+ '\nP&L x10: ' +str(pnl)+'%\nOPEN: '+str(start_price)+'\nCLOSE: '+str(current_price)+'\nTotal PNL: '+str(self.pnl))
                     self.closed +=1
+                    self.summary_pnl = (self.summary_pnl + round(pnl, 2))
+                    self.pnl = summary_pnl/self.closed
                     self.poss.remove(symbol)
                     break
                 elif side == 'sell' and status != 'short':
@@ -46,8 +52,10 @@ class Utils(object):
                     if -pnl>0: icon = '✔️'
                     elif -pnl<=0: icon = '🚫'
 
-                    self.send(icon + 'Сделка SELL #'+ symbol +' закрыта. \nВремя Открытия: '+ str(str(time[2])+'.'+str(time[1])+ ' '+str(time[3])+':'+str(time[4]))+ '\nP&L x10: ' +str(-pnl)+'%\nOPEN: '+str(start_price)+'\nCLOSE: '+str(current_price))
+                    self.send(icon + 'Сделка SELL #'+ symbol +' закрыта. \nВремя Открытия: '+ str(str(time[2])+'.'+str(time[1])+ ' '+str(time[3])+':'+str(time[4]))+ '\nP&L x10: ' +str(-pnl)+'%\nOPEN: '+str(start_price)+'\nCLOSE: '+str(current_price)+'\nTotal PNL: '+str(self.pnl))
                     self.closed +=1
+                    self.summary_pnl = (self.summary_pnl + round(-pnl, 2))
+                    self.pnl = summary_pnl / self.closed
                     self.poss.remove(symbol)
                     break
 
