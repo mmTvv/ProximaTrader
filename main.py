@@ -44,8 +44,9 @@ while True:
                 #    print(f'[INFO]: order for {symbol} has already been created')
 
                 # Signal to buy or sell
+                print( symbol)
                 signal, data = analitic.main(symbol=symbol, timeframe=timeframe )
-                print(signal, data)
+                
                 if signal == 'long' and symbol not in utils.poss:
                     utils.poss.append(symbol)
                     utils.send(f'🟩 BUY - #{symbol}\nprice: '+str(data.price)+'\norders: '+str(utils.closed)+'/'+str(utils.pos))
