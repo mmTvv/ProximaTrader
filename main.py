@@ -35,14 +35,13 @@ while True:
                     print(f'[INFO]: order for {symbol} has already been created')
 
                 # Signal to buy or sell
-                signal = analitic.main(symbol=symbol, timeframe=timeframe )
+                signal, data = analitic.main(symbol=symbol, timeframe=timeframe )
                 
                 if signal == 'long':
                     utils.poss.append(symbol)
-                    kl = bot.klines(symbol=symbol, limit=1)
-                    utils.send(f'🟩 BUY - #{symbol}\nprice: '+str(kl.Close.iloc[-1])+'\norders: '+str(utils.closed)+'/'+str(utils.pos))
+                    utils.send(f'🟩 BUY - #{symbol}\nprice: '+str(data['price'])+'\norders: '+str(utils.closed)+'/'+str(utils.pos))
                     
-                    th.Thread(target=utils.watcher, args=(symbol, 'buy', )).start()
+                    th.Thread(target=utils.watcher, args=(symbol, 'buy', data['price'],)).start()
 
                     #bot.set_mode(symbol)
                     
@@ -54,10 +53,9 @@ while True:
                 if signal == 'short':
                     utils.poss.append(symbol)
 
-                    kl = bot.klines(symbol=symbol, limit=1)
-                    utils.send(f'🟥 SELL - #{symbol}\nprice: '+str(kl.Close.iloc[-1])+'\norders: '+str(utils.closed)+'/'+str(utils.pos))
+                    utils.send(f'🟥 SELL - #{symbol}\nprice: '+str(data['price'])+'\norders: '+str(utils.closed)+'/'+str(utils.pos))
                     
-                    th.Thread(target=utils.watcher, args=(symbol, 'sell', )).start()
+                    th.Thread(target=utils.watcher, args=(symbol, 'sell', data['price'])).start()
                     #bot.set_mode(symbol)
                     #sleep(2)
                     #bot.place_order_market(symbol, 'sell')

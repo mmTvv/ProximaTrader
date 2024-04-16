@@ -23,19 +23,17 @@ class Utils(object):
     def send(self, text):
         self.tg.send_message(channel_id, text)
 
-    def watcher(self, symbol, side):
+    def watcher(self, symbol, side, start_price):
         
         try:
-            kl = self.bot.klines(symbol, timeframe=timeframe, limit = 1)
-            start_price = kl.Close.iloc[-1]
             time = datetime.now().timetuple()
             self.pos += 1
             while True:
                 sleep(120)
                 
-                status = self.analitic.main(symbol=symbol, timeframe=timeframe)
+                status, data = self.analitic.main(symbol=symbol, timeframe=timeframe)
                 if side == 'buy' and status != 'long':
-                    current_price = self.bot.klines(symbol, timeframe=timeframe, limit=1).Close.iloc[-1]
+                    current_price = data['price']
                     pnl = round((current_price/(start_price / 100))-100, 2)*10
                     if pnl>0: icon = '✔️'
                     elif pnl<=0: icon = '🚫'
@@ -49,7 +47,7 @@ class Utils(object):
                     
                     break
                 elif side == 'sell' and status != 'short':
-                    current_price = self.bot.klines(symbol, timeframe=timeframe, limit=1).Close.iloc[-1]
+                    current_price = data['price']
                     pnl = round((current_price/(start_price / 100))-100, 2)*10
                     if -pnl>0: icon = '✔️'
                     elif -pnl<=0: icon = '🚫'
