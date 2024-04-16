@@ -43,7 +43,7 @@ class analitic:
 		except:
 			pass
 
-			
+
 	def calculate_ema(self,symbol, timeframe=timeframe, period=100):
 		try:
 			ohlcv = self.bot.kline(symbol, timeframe, limit=period)
@@ -131,6 +131,6 @@ class analitic:
 				return 'none'
 		except Exception as err:
 			print(err)
-			return 'none', {}
+			return 'err', {}
 
 	

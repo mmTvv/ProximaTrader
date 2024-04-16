@@ -23,6 +23,8 @@ for symbol in symbols:
         if signal == 'long' or signal == 'short':
             utils.poss.append(symbol)
             print(symbol, end=' ')
+        if signal == 'err':
+            utils.poss.remove(symbol)
     except:
         pass
 while True:
