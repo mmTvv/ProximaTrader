@@ -16,7 +16,7 @@ symbols = bot.get_tickers()     # getting all symbols from the Bybit Derivatives
 print(f'[INFO] Your balance: {bot.get_balance()} USDT')
 
 print('[INFO] Start initialazing...')
-print('[INFO]: Init: ', end = ' ')
+print('[INFO] Init: ', end = ' ')
 for symbol in symbols:
     try:
         signal, data = analitic.main(symbol=symbol, timeframe=timeframe )
@@ -40,17 +40,17 @@ while True:
             # Checking every symbol from the symbols list:
             for symbol in symbols:
                 pos = bot.get_positions()
-                if symbol in utils.poss:
-                    print(f'[INFO]: order for {symbol} has already been created')
+                #if symbol in utils.poss:
+                #    print(f'[INFO]: order for {symbol} has already been created')
 
                 # Signal to buy or sell
                 signal, data = analitic.main(symbol=symbol, timeframe=timeframe )
-                
-                if signal == 'long':
+                print(signal, data)
+                if signal == 'long' and symbol not in utils.poss:
                     utils.poss.append(symbol)
-                    utils.send(f'🟩 BUY - #{symbol}\nprice: '+str(data['price'])+'\norders: '+str(utils.closed)+'/'+str(utils.pos))
+                    utils.send(f'🟩 BUY - #{symbol}\nprice: '+str(data.price)+'\norders: '+str(utils.closed)+'/'+str(utils.pos))
                     
-                    th.Thread(target=utils.watcher, args=(symbol, 'buy', data['price'],)).start()
+                    th.Thread(target=utils.watcher, args=(symbol, 'buy', data.price,)).start()
 
                     #bot.set_mode(symbol)
                     
@@ -59,12 +59,12 @@ while True:
 
                     sleep(5)
 
-                if signal == 'short':
+                if signal == 'short' not in utils.poss:
                     utils.poss.append(symbol)
 
-                    utils.send(f'🟥 SELL - #{symbol}\nprice: '+str(data['price'])+'\norders: '+str(utils.closed)+'/'+str(utils.pos))
+                    utils.send(f'🟥 SELL - #{symbol}\nprice: '+str(data.price)+'\norders: '+str(utils.closed)+'/'+str(utils.pos))
                     
-                    th.Thread(target=utils.watcher, args=(symbol, 'sell', data['price'])).start()
+                    th.Thread(target=utils.watcher, args=(symbol, 'sell', data.price)).start()
                     #bot.set_mode(symbol)
                     #sleep(2)
                     #bot.place_order_market(symbol, 'sell')

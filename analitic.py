@@ -6,7 +6,6 @@ class analitic:
 		self.bot = bot
 
 	def calculate_bollinger_bands(self, symbol, timeframe=timeframe, period=20, num_std_dev=2):
-		sleep(0.1)
 		ohlcv = self.bot.kline(symbol, timeframe, limit=period)
 		closes = [tick[4] for tick in ohlcv]
 
@@ -23,7 +22,6 @@ class analitic:
 		return upper_band, lower_band
 
 	def calculate_rsi(self, symbol, timeframe=timeframe,period=14):
-		sleep(0.1)
 		ohlcv = self.bot.kline(symbol, timeframe, limit=period)
 		closes = [tick[4] for tick in ohlcv]
 		changes = [closes[i] - closes[i - 1] for i in range(1, len(closes))]
@@ -40,7 +38,6 @@ class analitic:
 			return 100 - (100 / (1 + rs))
 
 	def calculate_ema(self,symbol, timeframe=timeframe, period=100):
-		sleep(0.1)
 		ohlcv = self.bot.kline(symbol, timeframe, limit=period)
 		closes = [tick[4] for tick in ohlcv]
 
@@ -54,7 +51,6 @@ class analitic:
 		return ema_values[-1]
 
 	def calculate_stochastic(self,symbol, timeframe=timeframe, k_period=14, d_period=3):
-		sleep(0.1)
 		ohlcv = self.bot.kline(symbol, timeframe, limit=k_period + d_period)
 		closes = [tick[4] for tick in ohlcv]
 
@@ -66,11 +62,10 @@ class analitic:
 
 		# Calculate %D (simple moving average of %K)
 		percent_d = sum(closes[:d_period]) / d_period
-
+		
 		return percent_k, percent_d
 
 	def calculate_support_resistance(self,symbol, timeframe=timeframe, window=20):
-		sleep(0.1)
 		ohlcv = self.bot.kline(symbol, timeframe)
 		closes = [tick[4] for tick in ohlcv]
 
@@ -83,26 +78,41 @@ class analitic:
 		try:
 			# Проверка RSI, EMA, Stochastic, Support, and Resistance for the symbol
 			rsi = self.calculate_rsi(symbol)
-			ema = self.calculate_ema(symbol)
-			percent_k, percent_d = self.calculate_stochastic(symbol)
-			support_level, resistance_level = self.calculate_support_resistance(symbol)
-			current_price = self.bot.klines(symbol=symbol, limit=1).Close.iloc[-1]
-			upper_band, lower_band = self.calculate_bollinger_bands(symbol)
-			
+			if rsi < 70 and rsi >55:
+				ema = self.calculate_ema(symbol)
+				current_price = self.bot.klines(symbol=symbol, limit=1).Close.iloc[-1]
+				if current_price > ema:
+					percent_k, percent_d = self.calculate_stochastic(symbol)
+					if percent_k > percent_d:
+						support_level, resistance_level = self.calculate_support_resistance(symbol)
+						
+						if current_price > support_level:
+							upper_band, lower_band = self.calculate_bollinger_bands(symbol)
+							if current_price < upper_band:
+								# Replace 0.001 with your desired quantity
+								return 'long', {"RSI": rsi, "EMA": ema, "stochastick": percent_k, "stochasticd": percent_d, "price": current_price}
+				
 
-			# Check for long signal conditions
-			if rsi < 70 and rsi >55  and current_price > ema and percent_k > percent_d and current_price > support_level and current_price < upper_band:
-				# Replace 0.001 with your desired quantity
-				return 'long', {"RSI": rsi, "EMA": ema, "stochastick": percent_k, "stochasticd": percent_d, "price": current_price}
+				# Check for long signal conditions
+			
 			# Check for short signal conditions
-			elif rsi > 70 and current_price < ema and current_price < resistance_level and current_price > lower_band:
-				# Replace 0.001 with your desired quantity
-				return 'short', {"RSI": rsi, "EMA": ema, "stochastick": percent_k, "stochasticd": percent_d, "price": current_price}
+			elif rsi > 70:
+				current_price = self.bot.klines(symbol=symbol, limit=1).Close.iloc[-1]
+				ema = self.calculate_ema(symbol)
+				if current_price < ema:
+					support_level, resistance_level = self.calculate_support_resistance(symbol)
+					if current_price < resistance_level:
+						upper_band, lower_band = self.calculate_bollinger_bands(symbol)
+						percent_k, percent_d = self.calculate_stochastic(symbol)
+						if current_price > lower_band:
+							return 'short', {"RSI": rsi, "EMA": ema, "stochastick": percent_k, "stochasticd": percent_d, "price": current_price}
+							# Replace 0.001 with your desired quantity
+				
 
 			else:
 				return 'none'
 		except Exception as err:
-			print(f'[ERROR]: {symbol} skipped because {err}')
-
+			print(err)
+			return 'none', {}
 
 	
