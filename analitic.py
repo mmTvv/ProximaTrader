@@ -99,6 +99,8 @@ class analitic:
 				# Replace 0.001 with your desired quantity
 				return 'short', {"RSI": rsi, "EMA": ema, "stochastick": percent_k, "stochasticd": percent_d, "price": current_price}
 
+			else:
+				return 'none'
 		except Exception as err:
 			print(f'[ERROR]: {symbol} skipped')
 

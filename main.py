@@ -15,6 +15,11 @@ symbols = bot.get_tickers()     # getting all symbols from the Bybit Derivatives
 
 print(f'Your balance: {bot.get_balance()} USDT')
 
+print('Strat initialasing...')
+for symbol in symbols:
+    signal, data = analitic.main(symbol=symbol, timeframe=timeframe )
+    if signal == 'long' or signal == 'short':
+        utils.poss.append(symbol)
 
 while True:
     balance = bot.get_balance()
@@ -62,6 +67,9 @@ while True:
 
                     sleep(5)
 
+                if signal == "none" and symbol in utils.poss:
+                    utils.poss.remove(symbol)
 
-    print('Отдых')
-    sleep(60*60*12)
+               
+    print('\n---------------\nStart sleep: 60\n---------------\n')
+    sleep(60)
