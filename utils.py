@@ -32,7 +32,7 @@ class Utils(object):
                 sleep(120)
                 
                 status, data = self.analitic.main(symbol=symbol, timeframe=timeframe)
-                print(f'[INFO] symbol: {symbol} pnl: {round((data['price']/(start_price / 100))-100, 2)*10}')
+                print(f'[INFO] symbol: {symbol} pnl: {round((data.price/(start_price / 100))-100, 2)*10}')
                 if side == 'buy' and status != 'long':
                     current_price = data['price']
                     pnl = round((current_price/(start_price / 100))-100, 2)*10

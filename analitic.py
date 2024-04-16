@@ -1,12 +1,12 @@
 import time, ta
 from config import *
-
+from time import sleep
 class analitic:
 	def __init__(self, bot):
 		self.bot = bot
 
 	def calculate_bollinger_bands(self, symbol, timeframe=timeframe, period=20, num_std_dev=2):
-		sleep(0.5)
+		sleep(0.1)
 		ohlcv = self.bot.kline(symbol, timeframe, limit=period)
 		closes = [tick[4] for tick in ohlcv]
 
@@ -23,7 +23,7 @@ class analitic:
 		return upper_band, lower_band
 
 	def calculate_rsi(self, symbol, timeframe=timeframe,period=14):
-		sleep(0.5)
+		sleep(0.1)
 		ohlcv = self.bot.kline(symbol, timeframe, limit=period)
 		closes = [tick[4] for tick in ohlcv]
 		changes = [closes[i] - closes[i - 1] for i in range(1, len(closes))]
@@ -40,7 +40,7 @@ class analitic:
 			return 100 - (100 / (1 + rs))
 
 	def calculate_ema(self,symbol, timeframe=timeframe, period=100):
-		sleep(0.5)
+		sleep(0.1)
 		ohlcv = self.bot.kline(symbol, timeframe, limit=period)
 		closes = [tick[4] for tick in ohlcv]
 
@@ -54,7 +54,7 @@ class analitic:
 		return ema_values[-1]
 
 	def calculate_stochastic(self,symbol, timeframe=timeframe, k_period=14, d_period=3):
-		sleep(0.5)
+		sleep(0.1)
 		ohlcv = self.bot.kline(symbol, timeframe, limit=k_period + d_period)
 		closes = [tick[4] for tick in ohlcv]
 
@@ -70,7 +70,7 @@ class analitic:
 		return percent_k, percent_d
 
 	def calculate_support_resistance(self,symbol, timeframe=timeframe, window=20):
-		sleep(0.5)
+		sleep(0.1)
 		ohlcv = self.bot.kline(symbol, timeframe)
 		closes = [tick[4] for tick in ohlcv]
 
@@ -102,7 +102,7 @@ class analitic:
 			else:
 				return 'none'
 		except Exception as err:
-			print(f'[ERROR]: {symbol} skipped')
+			print(f'[ERROR]: {symbol} skipped because {err}')
 
 
 	
