@@ -31,9 +31,9 @@ class Utils(object):
             while True:
                 sleep(120)
                 
-                status, data = self.analitic.main(symbol=symbol, timeframe=timeframe)
-                print(f'[INFO] symbol: {symbol} pnl: {round((data.price/(start_price / 100))-100, 2)*10}')
-                if side == 'buy' and status != 'long':
+                data = self.analitic.main(symbol=symbol, timeframe=timeframe)
+                print(f'[INFO] symbol: {symbol} pnl: {round((data['price']/(start_price / 100))-100, 2)*10} side: {data['side']}')
+                if side == 'buy' and data['side'] != 'long':
                     current_price = data['price']
                     pnl = round((current_price/(start_price / 100))-100, 2)*10
                     if pnl>0: icon = '✔️'
@@ -47,7 +47,7 @@ class Utils(object):
                     self.send(icon +'Сделка BUY #'+ symbol +' закрыта. \nВремя Открытия: '+ str(str(time[2])+'.'+str(time[1])+ ' '+str(time[3])+':'+str(time[4]))+ '\nP&L x10: ' +str(pnl)+'%\nOPEN: '+str(start_price)+'\nCLOSE: '+str(current_price)+'\nTotal PNL: '+str(self.pnl)+'\norders: '+str(self.closed)+'/'+str(self.pos))
                     
                     break
-                elif side == 'sell' and status != 'short':
+                elif side == 'sell' and data['side'] != 'short':
                     current_price = data['price']
                     pnl = round((current_price/(start_price / 100))-100, 2)*10
                     if -pnl>0: icon = '✔️'

@@ -49,7 +49,7 @@ while True:
                 # Signal to buy or sell
                 
                 data = analitic.main(symbol=symbol, timeframe=timeframe )
-                print(symbol)
+
                 if data['side'] == 'long' and symbol not in utils.poss:
                     utils.poss.append(symbol)
                     utils.send(f'🟩 BUY - #{symbol}\nprice: '+str(data['price'])+'\norders: '+str(utils.closed)+'/'+str(utils.pos))
@@ -63,7 +63,7 @@ while True:
 
                     sleep(5)
 
-                if data['side'] == 'short' not in utils.poss:
+                if data['side'] == 'short' and symbol not in utils.poss:
                     utils.poss.append(symbol)
 
                     utils.send(f'🟥 SELL - #{symbol}\nprice: '+str(data['price'])+'\norders: '+str(utils.closed)+'/'+str(utils.pos))
