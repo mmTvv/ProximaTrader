@@ -19,14 +19,15 @@ print('[INFO] Start initialazing...')
 print('[INFO] Init: ', end = ' ')
 for symbol in symbols:
     try:
-        signal, data = analitic.main(symbol=symbol, timeframe=timeframe )
-        if signal == 'long' or signal == 'short':
+        signal = analitic.main(symbol=symbol, timeframe=timeframe )
+        if signal['side'] == 'long' or signal['side'] == 'short':
             utils.poss.append(symbol)
-            print(symbol, end=' ')
-        if signal == 'err':
-            utils.poss.remove(symbol)
+            
+        if signal['side'] == 'err':
+            symbols.remove(symbol)
     except:
         pass
+print(utils.poss)
 while True:
     balance = bot.get_balance()
 
@@ -46,14 +47,14 @@ while True:
                 #    print(f'[INFO]: order for {symbol} has already been created')
 
                 # Signal to buy or sell
-                print( symbol)
-                signal, data = analitic.main(symbol=symbol, timeframe=timeframe )
                 
-                if signal == 'long' and symbol not in utils.poss:
+                data = analitic.main(symbol=symbol, timeframe=timeframe )
+                print(symbol)
+                if data['side'] == 'long' and symbol not in utils.poss:
                     utils.poss.append(symbol)
-                    utils.send(f'🟩 BUY - #{symbol}\nprice: '+str(data.price)+'\norders: '+str(utils.closed)+'/'+str(utils.pos))
+                    utils.send(f'🟩 BUY - #{symbol}\nprice: '+str(data['price'])+'\norders: '+str(utils.closed)+'/'+str(utils.pos))
                     
-                    th.Thread(target=utils.watcher, args=(symbol, 'buy', data.price,)).start()
+                    th.Thread(target=utils.watcher, args=(symbol, 'buy', data['price'],)).start()
 
                     #bot.set_mode(symbol)
                     
@@ -62,20 +63,21 @@ while True:
 
                     sleep(5)
 
-                if signal == 'short' not in utils.poss:
+                if data['side'] == 'short' not in utils.poss:
                     utils.poss.append(symbol)
 
-                    utils.send(f'🟥 SELL - #{symbol}\nprice: '+str(data.price)+'\norders: '+str(utils.closed)+'/'+str(utils.pos))
+                    utils.send(f'🟥 SELL - #{symbol}\nprice: '+str(data['price'])+'\norders: '+str(utils.closed)+'/'+str(utils.pos))
                     
-                    th.Thread(target=utils.watcher, args=(symbol, 'sell', data.price)).start()
+                    th.Thread(target=utils.watcher, args=(symbol, 'sell', data['price'])).start()
                     #bot.set_mode(symbol)
                     #sleep(2)
                     #bot.place_order_market(symbol, 'sell')
 
                     sleep(5)
 
-                if signal == "none" and symbol in utils.poss:
-                    utils.poss.remove(symbol)
+                if data['side'] == "none" or data['side'] == 'err':
+                    if symbol in utils.poss:
+                        utils.poss.remove(symbol)
 
 
     print('\n---------------\nStart sleep: 60\n---------------\n')
