@@ -29,39 +29,42 @@ class Utils(object):
             time = datetime.now().timetuple()
             self.pos += 1
             while True:
-                sleep(120)
-                
-                data = self.analitic.main(symbol=symbol, timeframe=timeframe)
-                pnl = round((data['price']/(start_price / 100))-100, 2)*10
-                print(f'{symbol} {data} {pnl}')
-                if side == 'buy' and data['side'] != 'long':
-                    current_price = data['price']
-                    pnl = round((current_price/(start_price / 100))-100, 2)*10
-                    if pnl>0: icon = '✔️'
-                    elif pnl<=0: icon = '🚫'
-
-                    self.closed +=1
-                    self.summary_pnl = (self.summary_pnl + round(pnl, 2))
-                    self.pnl = self.summary_pnl/self.closed
-                    self.poss.remove(symbol)
-
-                    self.send(icon +'Сделка BUY #'+ symbol +' закрыта. \nВремя Открытия: '+ str(str(time[2])+'.'+str(time[1])+ ' '+str(time[3])+':'+str(time[4]))+ '\nP&L x10: ' +str(pnl)+'%\nOPEN: '+str(start_price)+'\nCLOSE: '+str(current_price)+'\nTotal PNL: '+str(self.pnl)+'\norders: '+str(self.closed)+'/'+str(self.pos))
+                try:
+                    sleep(120)
                     
-                    break
-                elif side == 'sell' and data['side'] != 'short':
-                    current_price = data['price']
-                    pnl = round((current_price/(start_price / 100))-100, 2)*10
-                    if -pnl>0: icon = '✔️'
-                    elif -pnl<=0: icon = '🚫'
+                    data = self.analitic.main(symbol=symbol, timeframe=timeframe)
+                    pnl = round((data['price']/(start_price / 100))-100, 2)*10
+                    print(f'{symbol} {data} {pnl}')
+                    if side == 'buy' and data['side'] != 'long':
+                        current_price = data['price']
+                        pnl = round((current_price/(start_price / 100))-100, 2)*10
+                        if pnl>0: icon = '✔️'
+                        elif pnl<=0: icon = '🚫'
 
-                    self.closed +=1
-                    self.summary_pnl = (self.summary_pnl + round(-pnl, 2))
-                    self.pnl = self.summary_pnl / self.closed
-                    self.poss.remove(symbol)
+                        self.closed +=1
+                        self.summary_pnl = (self.summary_pnl + round(pnl, 2))
+                        self.pnl = self.summary_pnl/self.closed
+                        self.poss.remove(symbol)
 
-                    self.send(icon + 'Сделка SELL #'+ symbol +' закрыта. \nВремя Открытия: '+ str(str(time[2])+'.'+str(time[1])+ ' '+str(time[3])+':'+str(time[4]))+ '\nP&L x10: ' +str(-pnl)+'%\nOPEN: '+str(start_price)+'\nCLOSE: '+str(current_price)+'\nTotal PNL: '+str(self.pnl)+'\norders: '+str(self.closed)+'/'+str(self.pos))
-                    
-                    break
+                        self.send(icon +'Сделка BUY #'+ symbol +' закрыта. \nВремя Открытия: '+ str(str(time[2])+'.'+str(time[1])+ ' '+str(time[3])+':'+str(time[4]))+ '\nP&L x10: ' +str(pnl)+'%\nOPEN: '+str(start_price)+'\nCLOSE: '+str(current_price)+'\nTotal PNL: '+str(self.pnl)+'\norders: '+str(self.closed)+'/'+str(self.pos))
+                        
+                        break
+                    elif side == 'sell' and data['side'] != 'short':
+                        current_price = data['price']
+                        pnl = round((current_price/(start_price / 100))-100, 2)*10
+                        if -pnl>0: icon = '✔️'
+                        elif -pnl<=0: icon = '🚫'
+
+                        self.closed +=1
+                        self.summary_pnl = (self.summary_pnl + round(-pnl, 2))
+                        self.pnl = self.summary_pnl / self.closed
+                        self.poss.remove(symbol)
+
+                        self.send(icon + 'Сделка SELL #'+ symbol +' закрыта. \nВремя Открытия: '+ str(str(time[2])+'.'+str(time[1])+ ' '+str(time[3])+':'+str(time[4]))+ '\nP&L x10: ' +str(-pnl)+'%\nOPEN: '+str(start_price)+'\nCLOSE: '+str(current_price)+'\nTotal PNL: '+str(self.pnl)+'\norders: '+str(self.closed)+'/'+str(self.pos))
+                        
+                        break
+                except Exception as err:
+                    print(f'{symbol} {err} {data}')
 
         except Exception as err:
             print('[ERROR]: '+ str(err))

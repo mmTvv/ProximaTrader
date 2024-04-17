@@ -125,7 +125,7 @@ class analitic:
 							return {"side": "short", "RSI": rsi, "EMA": ema, "stochastick": percent_k, "stochasticd": percent_d, "price": current_price}
 			
 
-			return {"side": "none"}
+			return {"side": "none", "price": 0}
 		except Exception as err:
 
 			return {"side": "err"}
