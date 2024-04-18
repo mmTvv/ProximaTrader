@@ -93,41 +93,31 @@ class analitic:
 			pass
 
 	def main(self, symbol, timeframe):
-		rsi, ema, current_price, percent_k, percent_d, support_level, resistance_level, upper_band, lower_band = 0,0,0,0,0,0,0,0,0
-
 		try:
 			# Проверка RSI, EMA, Stochastic, Support, and Resistance for the symbol
 			rsi = self.calculate_rsi(symbol)
-			if rsi < 70 and rsi >55:
-				ema = self.calculate_ema(symbol)
-				current_price = self.bot.klines(symbol=symbol, limit=1).Close.iloc[-1]
-				if current_price > ema:
-					percent_k, percent_d = self.calculate_stochastic(symbol)
-					if percent_k > percent_d:
-						support_level, resistance_level = self.calculate_support_resistance(symbol)
-						
-						if current_price > support_level:
-							upper_band, lower_band = self.calculate_bollinger_bands(symbol)
-							if current_price < upper_band:
-								# Replace 0.001 with your desired quantity
-								return {"side": 'long', "RSI": rsi, "EMA": ema, "stochastick": percent_k, "stochasticd": percent_d, "price": current_price}
+			ema = self.calculate_ema(symbol)
+			percent_k, percent_d = self.calculate_stochastic(symbol)
+			support_level, resistance_level = self.calculate_support_resistance(symbol)
+			current_price = self.bot.klines(symbol=symbol, limit=1).Close.iloc[-1]
+			upper_band, lower_band = self.calculate_bollinger_bands(symbol)
+			print(f"{symbol} RSI: {rsi}, EMA: {ema}, Stochastic (%K, %D): {percent_k}, {percent_d}, Current Price: {current_price}")
 
 
-			elif rsi > 70:
-				current_price = self.bot.klines(symbol=symbol, limit=1).Close.iloc[-1]
-				ema = self.calculate_ema(symbol)
-				if current_price < ema:
-					support_level, resistance_level = self.calculate_support_resistance(symbol)
-					if current_price < resistance_level:
-						upper_band, lower_band = self.calculate_bollinger_bands(symbol)
-						percent_k, percent_d = self.calculate_stochastic(symbol)
-						if current_price > lower_band:
-							return {"side": "short", "RSI": rsi, "EMA": ema, "stochastick": percent_k, "stochasticd": percent_d, "price": current_price}
-			
+			# Check for long signal conditions
+			if rsi < 70 and rsi >55  and current_price > ema and percent_k > percent_d and current_price > support_level and current_price < upper_band:
+				# Replace 0.001 with your desired quantity
 
-			return {"side": "none", "price": 0}
+				return {"side":'long', "RSI": rsi, "EMA": ema, "stochastick": percent_k, "stochasticd": percent_d, "price": current_price}
+			# Check for short signal conditions
+			elif rsi > 70 and current_price < ema and current_price < resistance_level and current_price > lower_band:
+				# Replace 0.001 with your desired quantity
+
+				return {"side": "short", "RSI": rsi, "EMA": ema, "stochastick": percent_k, "stochasticd": percent_d, "price": current_price}
+
+			else:
+				return {"side": "none", "RSI": rsi, "EMA": ema, "stochastick": percent_k, "stochasticd": percent_d, "price": current_price}
 		except Exception as err:
-
-			return {"side": "err"}
+			print(f'[ERROR]: {symbol} skipped')
 
 	
