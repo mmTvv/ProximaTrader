@@ -27,7 +27,7 @@ for symbol in symbols:
             symbols.remove(symbol)
     except:
         pass
-print(utils.poss)
+print(utils.start)
 while True:
     balance = bot.get_balance()
 
@@ -73,8 +73,9 @@ while True:
                         sleep(5)
 
                     if data['side'] == "none" or data['side'] == 'err':
-                        if symbol in utils.poss:
-                            utils.poss.remove(symbol)
+                        if symbol in utils.start:
+                            utils.start.remove(symbol)
+                            print('ХУУУУУУУУУУУУУУУЙ C=====3')
                 except:
                     pass
 
