@@ -13,6 +13,7 @@ class Utils(object):
         self.bot = bot
         self.analitic = analitic(bot)
 
+        self.start = []
         self.pos = 0
         self.closed = 0
         self.poss = []

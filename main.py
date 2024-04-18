@@ -21,7 +21,7 @@ for symbol in symbols:
     try:
         signal = analitic.main(symbol=symbol, timeframe=timeframe )
         if signal['side'] == 'long' or signal['side'] == 'short':
-            utils.poss.append(symbol)
+            utils.start.append(symbol)
             
         if signal['side'] == 'err':
             symbols.remove(symbol)
@@ -47,7 +47,7 @@ while True:
                     
                     data = analitic.main(symbol=symbol, timeframe=timeframe )
 
-                    if data['side'] == 'long' and symbol not in utils.poss:
+                    if data['side'] == 'long' and symbol not in utils.start and symbol not in utils.poss:
                         utils.poss.append(symbol)
                         utils.send(f'🟩 BUY - #{symbol}\nprice: '+str(data['price'])+'\norders: '+str(utils.closed)+'/'+str(utils.pos))
                         
@@ -60,7 +60,7 @@ while True:
 
                         sleep(5)
 
-                    if data['side'] == 'short' and symbol not in utils.poss:
+                    if data['side'] == 'short' and symbol not in utils.start and symbol not in utils.poss:
                         utils.poss.append(symbol)
 
                         utils.send(f'🟥 SELL - #{symbol}\nprice: '+str(data['price'])+'\norders: '+str(utils.closed)+'/'+str(utils.pos))
