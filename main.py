@@ -14,7 +14,7 @@ analitic = analitic(bot)
 symbols = bot.get_tickers()     # getting all symbols from the Bybit Derivatives
 
 print(f'[INFO] Your balance: {bot.get_balance()} USDT')
-
+'''
 print('[INFO] Start initialazing...')
 print('[INFO] Init: ', end = ' ')
 for symbol in symbols:
@@ -27,10 +27,10 @@ for symbol in symbols:
             symbols.remove(symbol)
     except:
         pass
-print(utils.start)
+print(utils.start)'''
 while True:
-    buys = {}
-    sells = {}
+    buys = []
+    sells = []
     balance = bot.get_balance()
 
     if balance == None:
@@ -47,10 +47,10 @@ while True:
                 try:
                     pos = bot.get_positions()
                     
-                    dataD = analitic.main(symbol=symbol, timeframe='D' )
-                    data30m = analitic.main(symbol=symbol, timeframe=30 )
-
-                    if datadD['side'] == 'long' and data30m['side'] == 'short' and symbol not in utils.start and symbol not in utils.poss:
+                    dataD = analitic.main(symbol=symbol, timeframe=60 )
+                    data30m = analitic.main(symbol=symbol, timeframe=15 )
+                    print(f'{symbol} - {dataD["side"]} - {data30m["side"]}')
+                    if dataD['side'] == 'long' and data30m['side'] == 'long' and symbol not in utils.start and  symbol not in utils.poss:
                         utils.poss.append(symbol)
                         buys.append(symbol)
                         
@@ -78,11 +78,9 @@ while True:
                         if symbol in utils.start:
                             utils.start.remove(symbol)
                             print('ХУУУУУУУУУУУУУУУЙ C=====3')
-
-                utils.send(f'SLEEP : 15 MIN\n🟩 BUY - {buys} \n🟥 SELL - {sells}\norders: '+str(utils.closed)+'/'+str(utils.pos))
-
                 except:
                     pass
 
+    utils.send(f'SLEEP : 15 MIN\n🟩 BUY - {buys} \n🟥 SELL - {sells}\norders: '+str(utils.closed)+'/'+str(utils.pos))
     print('\n---------------\nStart sleep: 900\n---------------\n')
     sleep(900)
