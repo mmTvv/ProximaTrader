@@ -29,6 +29,8 @@ for symbol in symbols:
         pass
 print(utils.start)
 while True:
+    buys = {}
+    sells = {}
     balance = bot.get_balance()
 
     if balance == None:
@@ -45,11 +47,12 @@ while True:
                 try:
                     pos = bot.get_positions()
                     
-                    data = analitic.main(symbol=symbol, timeframe=timeframe )
+                    dataD = analitic.main(symbol=symbol, timeframe='D' )
+                    data30m = analitic.main(symbol=symbol, timeframe=30 )
 
-                    if data['side'] == 'long' and symbol not in utils.start and symbol not in utils.poss:
+                    if datadD['side'] == 'long' and data30m['side'] == 'short' and symbol not in utils.start and symbol not in utils.poss:
                         utils.poss.append(symbol)
-                        utils.send(f'🟩 BUY - #{symbol}\nprice: '+str(data['price'])+'\norders: '+str(utils.closed)+'/'+str(utils.pos))
+                        buys.append(symbol)
                         
                         th.Thread(target=utils.watcher, args=(symbol, 'buy', data['price'],)).start()
 
@@ -60,11 +63,10 @@ while True:
 
                         sleep(5)
 
-                    if data['side'] == 'short' and symbol not in utils.start and symbol not in utils.poss:
+                    if dataD['side'] == 'short' and data30m['side'] == 'short' and symbol not in utils.start and symbol not in utils.poss:
                         utils.poss.append(symbol)
+                        sells.append(symbol)
 
-                        utils.send(f'🟥 SELL - #{symbol}\nprice: '+str(data['price'])+'\norders: '+str(utils.closed)+'/'+str(utils.pos))
-                        
                         th.Thread(target=utils.watcher, args=(symbol, 'sell', data['price'])).start()
                         #bot.set_mode(symbol)
                         #sleep(2)
@@ -76,8 +78,11 @@ while True:
                         if symbol in utils.start:
                             utils.start.remove(symbol)
                             print('ХУУУУУУУУУУУУУУУЙ C=====3')
+
+                utils.send(f'SLEEP : 15 MIN\n🟩 BUY - {buys} \n🟥 SELL - {sells}\norders: '+str(utils.closed)+'/'+str(utils.pos))
+
                 except:
                     pass
 
-    print('\n---------------\nStart sleep: 60\n---------------\n')
-    sleep(60)
+    print('\n---------------\nStart sleep: 900\n---------------\n')
+    sleep(900)

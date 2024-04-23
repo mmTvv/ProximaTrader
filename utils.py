@@ -31,7 +31,7 @@ class Utils(object):
             self.pos += 1
             while True:
                 try:
-                    sleep(120)
+                    sleep(60*60)
                     
                     data = self.analitic.main(symbol=symbol, timeframe=timeframe)
                     pnl = round((data['price']/(start_price / 100))-100, 2)*10
