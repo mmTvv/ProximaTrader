@@ -101,7 +101,7 @@ class analitic:
 			support_level, resistance_level = self.calculate_support_resistance(symbol, timeframe =timeframe)
 			current_price = self.bot.klines(symbol=symbol, limit=1).Close.iloc[-1]
 			upper_band, lower_band = self.calculate_bollinger_bands(symbol, timeframe =timeframe)
-			#print(f"{symbol} RSI: {rsi}, EMA: {ema}, Stochastic (%K, %D): {percent_k}, {percent_d}, Current Price: {current_price}")
+			print(f"{symbol} RSI: {rsi}, EMA: {ema}, Stochastic (%K, %D): {percent_k}, {percent_d}, Current Price: {current_price}")
 
 
 			# Check for long signal conditions
@@ -116,7 +116,7 @@ class analitic:
 				return {"side": "short", "RSI": rsi, "EMA": ema, "stochastick": percent_k, "stochasticd": percent_d, "price": current_price}
 
 			else:
-				return {"side": "none", "RSI": rsi, "EMA": ema, "stochastick": percent_k, "stochasticd": percent_d, "price": current_price}
+				return {"side": "long", "RSI": rsi, "EMA": ema, "stochastick": percent_k, "stochasticd": percent_d, "price": current_price}
 		except Exception as err:
 			print(f'[ERROR]: {symbol} skipped {err}')
 
