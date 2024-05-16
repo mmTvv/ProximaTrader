@@ -56,19 +56,6 @@ class ByBit:
 		except Exception as err:
 			print(err)
 
-	def kline(self, symbol, timeframe=60, limit=500):
-		try:
-			resp = self.session.get_kline(
-				category='linear',
-				symbol=symbol,
-				interval=timeframe,
-				limit=limit
-			)['result']['list']
-			for i in range(0, len(resp)):
-		 		resp[i] = list(map(float, resp[i]))
-			return resp
-		except Exception as err:
-			print(err)
 	# Getting your current positions. It returns symbols list with opened positions
 	def get_positions(self):
 		try:
