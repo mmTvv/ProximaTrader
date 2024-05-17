@@ -6,35 +6,23 @@ import ta
 from time import sleep
 import threading as th
 from analitic import analitic
+import sys
 
 bot = bybit.ByBit()
 utils = utils.Utils(bot)
 analitic = analitic(bot)
 
-symbols = bot.get_tickers()     # getting all symbols from the Bybit Derivatives
+symbols = bot.get_tickers()
+balance = bot.get_balance()
+if balance == None:
+    print('Cant connect to API')
+    sys.exit(1)
 
-print(f'[INFO] Your balance: {bot.get_balance()} USDT')
-'''
-print('[INFO] Start initialazing...')
-print('[INFO] Init: ', end = ' ')
-for symbol in symbols:
-    try:
-        signal = analitic.main(symbol=symbol, timeframe=timeframe )
-        if signal['side'] == 'long' or signal['side'] == 'short':
-            utils.start.append(symbol)
-            
-        if signal['side'] == 'err':
-            symbols.remove(symbol)
-    except:
-        pass
-print(utils.start)'''
+print(f'[INFO] Your balance: {balance} USDT')
+
 while True:
     buys = []
     sells = []
-    balance = bot.get_balance()
-
-    if balance == None:
-        print('Cant connect to API')
 
     if balance != None: #and float(balance) > qty/leverage:
 
@@ -47,10 +35,9 @@ while True:
                 try:
                     pos = bot.get_positions()
                     
-                    dataD = analitic.main(symbol=symbol, timeframe=60 )
-                    data30m = analitic.main(symbol=symbol, timeframe=15 )
+                    data = analitic.main(symbol=symbol, timeframe=timeframe )
                     print(f'{symbol} - {dataD["side"]} - {data30m["side"]}')
-                    if dataD['side'] == 'long' and data30m['side'] == 'long' and symbol not in utils.start and  symbol not in utils.poss:
+                    if data['side'] == 'long' and symbol not in utils.start and  symbol not in utils.poss:
                         utils.poss.append(symbol)
                         buys.append(symbol)
                         
@@ -63,7 +50,7 @@ while True:
 
                         sleep(5)
 
-                    if dataD['side'] == 'short' and data30m['side'] == 'short' and symbol not in utils.start and symbol not in utils.poss:
+                    if data['side'] == 'short' and symbol not in utils.start and symbol not in utils.poss:
                         utils.poss.append(symbol)
                         sells.append(symbol)
 
@@ -76,11 +63,10 @@ while True:
 
                     if data['side'] == "none" or data['side'] == 'err':
                         if symbol in utils.start:
-                            utils.start.remove(symbol)
-                            print('ХУУУУУУУУУУУУУУУЙ C=====3')
+                            pass
                 except:
                     pass
 
     utils.send(f'SLEEP : 15 MIN\n🟩 BUY - {buys} \n🟥 SELL - {sells}\norders: '+str(utils.closed)+'/'+str(utils.pos))
     print('\n---------------\nStart sleep: 900\n---------------\n')
-    sleep(900)
+    sleep(15*20)
