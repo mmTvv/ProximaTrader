@@ -66,7 +66,7 @@ while True:
                             pass
                 except:
                     pass
-
+    print(f'SLEEP : 15 MIN\n🟩 BUY - {buys} \n🟥 SELL - {sells}\norders: '+str(utils.closed)+'/'+str(utils.pos))
     utils.send(f'SLEEP : 15 MIN\n🟩 BUY - {buys} \n🟥 SELL - {sells}\norders: '+str(utils.closed)+'/'+str(utils.pos))
     print('\n---------------\nStart sleep: 900\n---------------\n')
     sleep(15*20)
