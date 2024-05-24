@@ -172,4 +172,3 @@ class ByBit:
 				print(err)
 
 		return {'side': side, 'symbol': symbol, 'price': mark_price}
-

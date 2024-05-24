@@ -14,16 +14,13 @@ analitic = analitic(bot)
 
 symbols = bot.get_tickers()
 balance = bot.get_balance()
+
 if balance == None:
     print('Cant connect to API')
     sys.exit(1)
-
 print(f'[INFO] Your balance: {balance} USDT')
 
 while True:
-    buys = []
-    sells = []
-
     if balance != None: #and float(balance) > qty/leverage:
 
         balance = float(balance)
@@ -36,15 +33,13 @@ while True:
                     pos = bot.get_positions()
                     
                     data = analitic.main(symbol=symbol, timeframe=timeframe )
-                    print(f'{symbol} - {dataD["side"]} - {data30m["side"]}')
-                    if data['side'] == 'long' and symbol not in utils.start and  symbol not in utils.poss:
+
+                    if data['side'] == 'long' and symbol not in utils.start and symbol not in utils.poss:
                         utils.poss.append(symbol)
-                        buys.append(symbol)
                         
                         th.Thread(target=utils.watcher, args=(symbol, 'buy', data['price'],)).start()
 
                         #bot.set_mode(symbol)
-                        
                         #sleep(2)
                         #bot.place_order_market(symbol, 'buy')
 
@@ -55,6 +50,7 @@ while True:
                         sells.append(symbol)
 
                         th.Thread(target=utils.watcher, args=(symbol, 'sell', data['price'])).start()
+
                         #bot.set_mode(symbol)
                         #sleep(2)
                         #bot.place_order_market(symbol, 'sell')
@@ -66,7 +62,14 @@ while True:
                             pass
                 except:
                     pass
+<<<<<<< HEAD
+
+
+    print(f'🟩 BUY - {utils.poss} norders: '+str(utils.closed)+'/'+str(utils.pos))
+    utils.send(f'SLEEP : 15 MIN\n🟩 BUY - {utils.poss} \norders: '+str(utils.closed)+'/'+str(utils.pos))
+=======
     print(f'SLEEP : 15 MIN\n🟩 BUY - {buys} \n🟥 SELL - {sells}\norders: '+str(utils.closed)+'/'+str(utils.pos))
     utils.send(f'SLEEP : 15 MIN\n🟩 BUY - {buys} \n🟥 SELL - {sells}\norders: '+str(utils.closed)+'/'+str(utils.pos))
+>>>>>>> 5bf9288053003e5fbf6c4ce8e08a3368e37ac1f8
     print('\n---------------\nStart sleep: 900\n---------------\n')
     sleep(15*20)

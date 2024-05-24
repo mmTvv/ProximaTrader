@@ -12,9 +12,9 @@ class analitic:
 	def main(self, symbol, timeframe):
 		try:
 			df_data = self.bot.klines(symbol, timeframe = timeframe, limit = 28)
-			current_price = self.bot.klines(symbol, timeframe = timeframe, limit = 1)
+			current_price = self.bot.klines(symbol, timeframe = timeframe, limit = 1)['Close'].iloc[-1]
 			rsi_data = self.rsi(df_data)
-			if rsi_data.iloc[-1] > 70 and rsi_data.iloc[-3] < 70:
+			if rsi_data.iloc[-2] > 70 and rsi_data.iloc[-3] < 70 and rsi_data.iloc[-1] > rsi_data.iloc[-2]:
 				# Replace 0.001 with your desired quantity
 				print(f'{symbol} - {rsi_data.iloc[-1]}')
 				return {"side":'long', "price": current_price}
@@ -29,5 +29,3 @@ class analitic:
 		except Exception as err:
 			pass
 			#print(f'[ERROR]: {symbol} skipped {err}')
-
-	
