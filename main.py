@@ -62,14 +62,10 @@ while True:
                             pass
                 except:
                     pass
-<<<<<<< HEAD
+
 
 
     print(f'🟩 BUY - {utils.poss} norders: '+str(utils.closed)+'/'+str(utils.pos))
     utils.send(f'SLEEP : 15 MIN\n🟩 BUY - {utils.poss} \norders: '+str(utils.closed)+'/'+str(utils.pos))
-=======
-    print(f'SLEEP : 15 MIN\n🟩 BUY - {buys} \n🟥 SELL - {sells}\norders: '+str(utils.closed)+'/'+str(utils.pos))
-    utils.send(f'SLEEP : 15 MIN\n🟩 BUY - {buys} \n🟥 SELL - {sells}\norders: '+str(utils.closed)+'/'+str(utils.pos))
->>>>>>> 5bf9288053003e5fbf6c4ce8e08a3368e37ac1f8
     print('\n---------------\nStart sleep: 900\n---------------\n')
     sleep(15*20)
