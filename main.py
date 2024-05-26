@@ -32,7 +32,7 @@ while True:
                 try:
                     pos = bot.get_positions()
                     
-                    data = analitic.main(symbol=symbol, timeframe=timeframe )
+                    data = analitic.main(symbol=symbol)
 
                     if data['side'] == 'long' and symbol not in utils.start and symbol not in utils.poss:
                         utils.poss.append(symbol)

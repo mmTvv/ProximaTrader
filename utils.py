@@ -36,14 +36,14 @@ class Utils(object):
         while True:
             sleep(30)
 
-            data = self.bot.klines(symbol, timeframe = timeframe, limit = 28)    
+            data = self.bot.klines(symbol, timeframe = 60, limit = 28)    
             rsi = ta.momentum.RSIIndicator(close = data['Close'], window = 14).rsi()
             
             current_price = data.Close.iloc[-1]
             pnl = round((current_price/(start_price / 100))-100, 2)*10
             print(f'{symbol} {current_price} {pnl}')
             
-            if side == 'buy' and rsi.iloc[-1]<68:
+            if side == 'buy' and rsi.iloc[-1]<70:
                 if pnl>0: icon = '✔️'
                 elif pnl<=0: icon = '🚫'
 

@@ -1,5 +1,4 @@
 import time, ta
-from config import *
 from time import sleep
 class analitic:
 	def __init__(self, bot):
@@ -9,12 +8,14 @@ class analitic:
 		rsi = ta.momentum.RSIIndicator(close = data['Close'], window = period).rsi()
 		return rsi
 
-	def main(self, symbol, timeframe):
+	def main(self, symbol):
 		try:
-			df_data = self.bot.klines(symbol, timeframe = timeframe, limit = 28)
+			df_data_240 = self.bot.klines(symbol, timeframe = 240, limit = 28)
+			df_data_60 = self.bot.klines(symbol, timeframe = 60, limit = 28)
 			current_price = self.bot.klines(symbol, timeframe = timeframe, limit = 1)['Close'].iloc[-1]
-			rsi_data = self.rsi(df_data)
-			if rsi_data.iloc[-2] > 70 and rsi_data.iloc[-3] < 70 and rsi_data.iloc[-1] > rsi_data.iloc[-2]:
+			rsi_data_240 = self.rsi(df_data_240)
+			rsi_data_60 = self.rsi(df_data_60)
+			if rsi_data_240.iloc[-2] > 70 and rsi_data_240.iloc[-3] < 70 and rsi_data_240.iloc[-1] > rsi_data_240.iloc[-2] and rsi_data_60.iloc[-1] > 70:
 				# Replace 0.001 with your desired quantity
 				print(f'{symbol} - {rsi_data.iloc[-1]}')
 				return {"side":'long', "price": current_price}
