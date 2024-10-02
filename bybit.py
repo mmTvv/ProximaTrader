@@ -32,7 +32,7 @@ class ByBit:
 			symbols = []
 			blacklist = ['HMSTRUSDT', 'BNBUSDT', 'LINKUSDT', 'HIFIUSDT']
 			for elem in resp:
-				if 'USDT' in elem['symbol'] and not 'USDC' in elem['symbol']: #and not '10000' in elem['symbol']:
+				if 'USDT' in elem['symbol'] and not 'USDC' in elem['symbol'] and not 'USDE' in elem['symbol'] and elem['symbol'] not in blacklist: #and not '10000' in elem['symbol']:
 					symbols.append(elem['symbol'])
 			return symbols
 		except Exception as err:
