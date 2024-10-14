@@ -2,135 +2,137 @@ import ta
 import telebot
 from datetime import datetime
 from time import sleep
-from analitic import Strategy  # Теперь использует новую стратегию
 import pandas as pd
 import mplfinance as mpf
 import matplotlib
-from datetime import datetime
-
+import matplotlib.pyplot as plt
 from config import *
-
+from analitic import Strategy
+from threading import Thread as th
 matplotlib.use('Agg')
 
 class Utils(object):
     def __init__(self, bot):
         self.tg = telebot.TeleBot(telegram)
         self.bot = bot
-        self.strategy = Strategy(bot)  # Используем новую стратегию
-        
-        self.indent = 5
+        self.strategy = Strategy(bot)
+        th(target= self.pnl_pic).start()
+        self.indent = 15
         self.pos = 0
         self.closed = 0
         self.poss = []
         self.pnl = 0
         self.summary_pnl = 0
-        self.stat_pnl = []
+        self.pnl_list = []
     
+    def pnl_pic(self):
+        while True:
+            sleep(60*60)
+            # Сохранение значения в список
+            self.pnl_list.append(self.pnl)
+    
+            # Построение графика
+            plt.plot(self.pnl_list, marker='o', markersize=8, markerfacecolor='red', markeredgewidth=2, markeredgecolor='black')
+            plt.title('График ПНЛ Часовые Свечи')
+            plt.xlabel('Index')
+            plt.ylabel('Value')
+            plt.grid(True)
+            plt.savefig("pnl.png")
+            img = open('pnl.png', 'rb')
+            self.pnl = 0
+            self.closed = 0
+            self.summary_pnl = 0
+            self.tg.send_photo(channel_id, img, caption="<b>Hours P&L</b>", parse_mode='HTML')
+
+        
     def send(self, text):
         self.tg.send_message(channel_id, text, parse_mode='HTML')
 
     def draw(self, symbol, text, price1, price2=None):
-        # Получение данных по свечам
+        # Получаем данные для свечного графика
         data = self.bot.klines(symbol, timeframe=15, limit=48)
-        if data.empty:
-            return
         data.index = data.index.astype(float) / 1000
         data.index = pd.to_datetime(data.index, unit='s')
-        # Настраиваем фигуру
+        # Создаем дополнительный график для отображения уровней
         add_plot = [
-            mpf.make_addplot([price1] * len(data), color='white', linestyle='-', label=f'вход: {price1}')
+            mpf.make_addplot([price1] * len(data), color='white', linestyle='-', label=f'Начальная цена: {price1}')
         ]
 
-        # Добавляем линию продажи, если она есть
+        # Если имеется уровень закрытия позиции, добавляем его
         if price2 is not None:
-            add_plot.append(mpf.make_addplot([price2] * len(data), color='blue', linestyle='-', label=f'выход: {price2}'))
+            add_plot.append(mpf.make_addplot([price2] * len(data), color='blue', linestyle='-', label=f'Цена закрытия: {price2}'))
         
-        # Рисуем свечной график и сохраняем его
+        # Строим график с добавлением свечей и дополнительных линий
         mpf.plot(data[['Open', 'High', 'Low', 'Close', 'Volume']], type='candle', style='nightclouds', 
-                 addplot=add_plot, title=f"{symbol} свечи на похоронах моей психики", ylabel='Price (USD)', savefig='candels.png')
+                 addplot=add_plot, title=f"{symbol} Свечной график", ylabel='Price (USD)', savefig='candles.png')
 
         # Отправляем график в Telegram
-        img = open('candels.png', 'rb')
+        img = open('candles.png', 'rb')
         self.tg.send_photo(channel_id, img, caption=text, parse_mode='HTML')
 
-    def watcher(self, symbol, side, start_price):
+    def watcher(self, symbol, side, start_price, tp, sl):
         time = datetime.now().timetuple()
         self.pos += 1
-        indent = 10
         max_pnl = 0
-        sl = False
+        entry_price = start_price
         
         while True:
-            if max_pnl >= 25:
-                indent = 15
-            elif max_pnl >= 70:
-                indent = 20
-            sleep(30)
+            sleep(5*60)
             
-            # Получаем данные по символу (часовой таймфрейм)
-            data = self.bot.klines(symbol, timeframe=60, limit=50)
-            if data.empty:
-                continue
+            # Получаем текущую цену
+            df = self.bot.klines(symbol=symbol, timeframe=60, limit=50)
+            current_price = df['Close'].iloc[-1]
 
-            current_price = data['Close'].iloc[-1]
-            pnl = round((current_price / (start_price / 100)) - 100, 2) * 10
+            # Рассчитываем текущий PnL
+            if side == 'long':
+                pnl = (current_price - entry_price) / entry_price * 100 * 10  # Плечо 10x
+            elif side == 'short':
+                pnl = (entry_price - current_price) / entry_price * 100 * 10
+            else:
+                pnl = 0
 
-            # Получение данных для Chandelier Exit и проверка ATR
-            long_stop, short_stop, direction = self.strategy.chandelier_exit(data)
-            atr = self.strategy.calculate_atr(data)
+            # Обновляем максимальный PnL
+            if pnl > max_pnl:
+                max_pnl = pnl
 
-            # Логика выхода из позиции (для long-позиций)
-            if side == 'buy':
-                if pnl > max_pnl:
-                    max_pnl = pnl
+            # Проверка на выход по стоп-лоссу или тейк-профиту
+            exit_signal = False
+            if side == 'long':
+                if current_price <= sl or current_price >= tp:
+                    exit_signal = True
+            elif side == 'short':
+                if current_price >= sl or current_price <= tp:
+                    exit_signal = True
+
+            # Проверяем стратегию на наличие сигнала для выхода (Chandelier Exit)
+            long_ce, short_ce = self.strategy.chandelier_exit(df)
+            if side == 'long' and current_price > long_ce.iloc[-1]:
+                exit_signal = True
+            if side == 'short' and current_price < short_ce.iloc[-1]:
+                exit_signal = True
+
+            # Если сработал сигнал выхода, закрываем позицию
+            if exit_signal:
+                icon = '✅' if pnl > 0 else '❌'
+
+                self.closed += 1
+                self.summary_pnl += round(pnl, 2)
+                self.pnl = self.summary_pnl / self.closed
+                if symbol in self.poss:
+                    self.poss.remove(symbol)
                 
-                # Условие выхода: цена пересекает линию Chandelier Exit или PnL ниже порога
-                if pnl < max_pnl - indent:
-                    icon = '✔️' if pnl > 0 else '🚫'
+                # Рисуем график с отмеченными точками входа и выхода
+                self.draw(symbol, 
+                    icon + f' <b>{side.upper()}</b> <code>{symbol}</code>\n' +
+                    f'<b>Дата закрытия:</b> {time[2]}.{time[1]} {time[3]}:{time[4]}\n' +
+                    f'<b>P&L x10:</b> {round(pnl, 2)}%\n' +
+                    f'<b>Открытие:</b> <code>{entry_price}</code>\n' +
+                    f'<b>Закрытие:</b> <code>{current_price}</code>\n' +
+                    f'<b>Средний PNL:</b> {round(self.pnl, 2)}%\n' +
+                    f'<b>Максимальный PNL:</b> {round(max_pnl, 2)}%\n' + 
+                    f'<b>Всего сделок:</b> {self.closed}/{self.pos}\n\n' +
+                    f'<b>https://www.bybit.com/trade/usdt/{symbol}</b>', entry_price, current_price
+                )
+                break
 
-                    self.closed += 1
-                    self.summary_pnl += round(pnl, 2)
-                    self.pnl = self.summary_pnl / self.closed
-                    self.poss.remove(symbol)
-                    
-                    self.draw(symbol, 
-                        icon + ' <b>BUY</b> <code>' + symbol + '</code>\n' +
-                        '<b>Время Открытия:</b> ' + str(time[2]) + '.' + str(time[1]) + ' ' + str(time[3]) + ':' + str(time[4]) + '\n' +
-                        '<b>P&L x10:</b> ' + str(pnl) + '%\n' +
-                        '<b>OPEN:</b> <code>' + str(start_price) + '</code>\n' +
-                        '<b>CLOSE:</b> <code>' + str(current_price) + '</code>\n' +
-                        '<b>AVR PNL:</b> ' + str(self.pnl) + '\n' +
-                        '<b>MAX PNL:</b> ' + str(max_pnl) + '\n' + 
-                        '<b>Orders:</b> ' + str(self.closed) + '/' + str(self.pos) +'\n\n'
-                        f'<b>https://www.bybit.com/trade/usdt/{symbol}</b>', start_price, current_price
-                    )
-                    break
-               
-            # Логика выхода из позиции (для short-позиций)
-            elif side == 'sell':
-                pnl = -pnl
-                if pnl > max_pnl:
-                    max_pnl = pnl
-
-                # Условие выхода: цена пересекает линию Chandelier Exit или PnL ниже порога
-                if pnl >= max_pnl - indent:
-                    icon = '✔️' if pnl > 0 else '🚫'
-
-                    self.closed += 1
-                    self.summary_pnl += round(pnl, 2)
-                    self.pnl = self.summary_pnl / self.closed
-                    self.poss.remove(symbol)
-                    
-                    self.draw(symbol,
-                        icon + ' <b>SELL</b> <code>' + symbol + '</code>\n' +
-                        '<b>Время Открытия:</b> ' + str(time[2]) + '.' + str(time[1]) + ' ' + str(time[3]) + ':' + str(time[4]) + '\n' +
-                        '<b>P&L x10:</b> ' + str(pnl) + '%\n' +
-                        '<b>OPEN:</b> <code>' + str(start_price) + '</code>\n' +
-                        '<b>CLOSE:</b> <code>' + str(current_price) + '</code>\n' +
-                        '<b>AVR PNL:</b> ' + str(self.pnl) + '\n' +
-                        '<b>MAX PNL:</b> ' + str(max_pnl) + '\n' + 
-                        '<b>Orders:</b> ' + str(self.closed) + '/' + str(self.pos) +'\n\n'
-                        f'<b>https://www.bybit.com/trade/usdt/{symbol}</b>', start_price, current_price
-                    )
-                    break
-            print(f'{symbol} {current_price} {pnl}')
+            print(f'{symbol} Текущая цена: {round(current_price, 8)}, PnL: {round(pnl, 2)}%')

@@ -54,7 +54,7 @@ while True:
 
             # Checking every symbol from the symbols list:
             for symbol in symbols:
-                if symbol not in utils.poss and symbol not in blacklist['long'] and symbol not in blacklist['short']:
+                if symbol not in utils.poss and symbol not in blacklist['long'] and symbol not in blacklist['short'] and (utils.pos - utils.closed) < 15:
                     try:
                         pos = bot.get_positions()
                         
@@ -63,8 +63,8 @@ while True:
                         if data['side'] == 'long':
                             utils.poss.append(symbol)
                             print(f'[+] {symbol}: long')
-                            th.Thread(target=utils.watcher, args=(symbol, 'buy', data['price'],)).start()
-                            utils.draw(symbol=symbol, text=f'<b>[+] LONG</b> <code>{symbol}</code>\n<b>price</b> <code>{round(data["price"], 7)}</code>\n<b>sl</b> <code>{round(data["sl"],7)}</code>', price1=data["price"])
+                            th.Thread(target=utils.watcher, args=(symbol, data['side'], data['price'], data['tp'], data['sl'])).start()
+                            utils.draw(symbol=symbol, text=f'<b>[+] LONG</b> <code>{symbol}</code>\n<b>price</b> <code>{round(data["price"], 7)}</code>\n<b>sl</b> <code>{round(data["sl"],7)}</code>\n<b>tp</b> <code>{round(data["tp"],7)}</code>', price1=data["price"])
                             #bot.set_mode(symbol)
                             #sleep(2)
                             #bot.place_order_market(symbol, 'buy')
@@ -74,8 +74,8 @@ while True:
                         if data['side'] == 'short':
                             utils.poss.append(symbol)
 
-                            th.Thread(target=utils.watcher, args=(symbol, 'sell', data['price'])).start()
-                            utils.draw(symbol=symbol, text=f'<b>[+] SHORT</b> <code>{symbol}</code>\n<b>price</b> <code>{round(data["price"], 7)}</code>\n<b>sl</b> <code>{round(data["sl"],7)}</code>', price1=data["price"])
+                            th.Thread(target=utils.watcher, args=(symbol, data['side'],  data['price'], data['tp'], data['sl'])).start()
+                            utils.draw(symbol=symbol, text=f'<b>[+] SHORT</b> <code>{symbol}</code>\n<b>price</b> <code>{round(data["price"], 7)}</code>\n<b>sl</b> <code>{round(data["sl"],7)}</code>\n<b>tp</b> <code>{round(data["tp"],7)}</code>', price1=data["price"])
                             #bot.set_mode(symbol)
                             #sleep(2)
                             #bot.place_order_market(symbol, 'sell')
