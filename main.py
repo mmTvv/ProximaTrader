@@ -54,7 +54,7 @@ while True:
 
             # Checking every symbol from the symbols list:
             for symbol in symbols:
-                if symbol not in utils.poss and symbol not in blacklist['long'] and symbol not in blacklist['short'] and (utils.pos - utils.closed) < 15:
+                if symbol not in utils.poss and symbol not in blacklist['long'] and symbol not in blacklist['short']:
                     try:
                         pos = bot.get_positions()
                         
@@ -93,4 +93,4 @@ while True:
     #print(f'🟩 BUY - {utils.poss} norders: '+str(utils.closed)+'/'+str(utils.pos))
     #utils.send(f'SLEEP : 15 MIN\n🟩 BUY - {utils.poss} \norders: '+str(utils.closed)+'/'+str(utils.pos))
     #print('\n---------------\nStart sleep: 900\n---------------\n')
-    sleep(15*60)
+    sleep(30)

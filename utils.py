@@ -24,6 +24,7 @@ class Utils(object):
         self.pnl = 0
         self.summary_pnl = 0
         self.pnl_list = []
+        self.draw('BTCUSDT', 'TEST STARTUP', 70000,65000)
     
     def pnl_pic(self):
         while True:
@@ -77,11 +78,16 @@ class Utils(object):
         entry_price = start_price
         
         while True:
-            sleep(5*60)
+            sleep(3)
             
             # Получаем текущую цену
-            df = self.bot.klines(symbol=symbol, timeframe=60, limit=50)
-            current_price = df['Close'].iloc[-1]
+            df = self.bot.klines(symbol=symbol, timeframe=60, limit=1)
+            try:
+                current_price = df['Close'].iloc[-1]
+            except:
+                sleep(5)
+                df = self.bot.klines(symbol=symbol, timeframe=60, limit=1)
+                current_price = df['Close'].iloc[-1]
 
             # Рассчитываем текущий PnL
             if side == 'long':
@@ -105,12 +111,13 @@ class Utils(object):
                     exit_signal = True
 
             # Проверяем стратегию на наличие сигнала для выхода (Chandelier Exit)
+            '''
             long_ce, short_ce = self.strategy.chandelier_exit(df)
             if side == 'long' and current_price > long_ce.iloc[-1]:
                 exit_signal = True
             if side == 'short' and current_price < short_ce.iloc[-1]:
                 exit_signal = True
-
+                '''
             # Если сработал сигнал выхода, закрываем позицию
             if exit_signal:
                 icon = '✅' if pnl > 0 else '❌'
@@ -118,8 +125,6 @@ class Utils(object):
                 self.closed += 1
                 self.summary_pnl += round(pnl, 2)
                 self.pnl = self.summary_pnl / self.closed
-                if symbol in self.poss:
-                    self.poss.remove(symbol)
                 
                 # Рисуем график с отмеченными точками входа и выхода
                 self.draw(symbol, 
@@ -133,6 +138,9 @@ class Utils(object):
                     f'<b>Всего сделок:</b> {self.closed}/{self.pos}\n\n' +
                     f'<b>https://www.bybit.com/trade/usdt/{symbol}</b>', entry_price, current_price
                 )
+                if symbol in self.poss:
+                    sleep(60)
+                    self.poss.remove(symbol)
                 break
 
             print(f'{symbol} Текущая цена: {round(current_price, 8)}, PnL: {round(pnl, 2)}%')

@@ -57,64 +57,6 @@ class ByBit:
         except Exception as err:
             print(err)
 
-    def heikinashi(self, df: pd.DataFrame) -> pd.DataFrame:
-        df_HA = df.copy()
-        
-        # Calculate Heikin Ashi close
-        df_HA['Close'] = (df_HA['Open'] + df_HA['High'] + df_HA['Low'] + df_HA['Close']) / 4
-        
-        # Calculate Heikin Ashi open
-        for i in range(len(df)):
-            if i == 0:
-                df_HA.loc[i, 'Open'] = (df_HA.loc[i, 'Open'] + df_HA.loc[i, 'Close']) / 2
-            else:
-                df_HA.loc[i, 'Open'] = (df_HA.loc[i-1, 'Open'] + df_HA.loc[i-1, 'Close']) / 2
-        
-        # Calculate Heikin Ashi high and low
-        df_HA['High'] = df_HA[['Open', 'Close', 'High']].max(axis=1)
-        df_HA['Low'] = df_HA[['Open', 'Close', 'Low']].min(axis=1)
-        
-        return df_HA
-
-
-
-    def klines(self, symbol, timeframe=timeframe, limit=500): 
-        try:
-            # Получаем обычные свечи
-            resp = self.session.get_kline(
-                category='linear',
-                symbol=symbol,
-                interval=timeframe,
-                limit=limit
-            )['result']['list']
-
-            # Преобразуем данные в DataFrame
-            resp = pd.DataFrame(resp)
-            resp.columns = ['Time', 'Open', 'High', 'Low', 'Close', 'Volume', 'Turnover']
-            resp = resp.astype(float)
-            resp = resp[::-1]
-
-            # Создаем DataFrame для Heiken Ashi
-            ha_resp = resp.copy()
-
-            # Расчет Heiken Ashi
-            ha_resp['Close'] = (resp['Open'] + resp['High'] + resp['Low'] + resp['Close']) / 4
-            ha_resp['Open'] = (resp['Open'].shift(1) + resp['Close'].shift(1)) / 2
-            ha_resp.loc[ha_resp.index[0], 'Open'] = (resp['Open'].iloc[0] + resp['Close'].iloc[0]) / 2  # Устанавливаем начальное значение через loc
-
-            ha_resp['High'] = ha_resp[['Open', 'Close', 'High']].max(axis=1)
-            ha_resp['Low'] = ha_resp[['Open', 'Close', 'Low']].min(axis=1)
-
-            # Возвращаем Time как столбец, а не индекс
-            ha_resp.reset_index(inplace=True)
-
-            # Возвращаем все необходимые столбцы, включая Time, Volume и Turnover
-            return ha_resp[['Time', 'Open', 'High', 'Low', 'Close', 'Volume', 'Turnover']]
-
-        except Exception as err:
-            print(err)
-
-
     # Getting your current positions. It returns symbols list with opened positions
     def get_positions(self):
         try:
