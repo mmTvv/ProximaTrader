@@ -24,13 +24,18 @@ class Utils(object):
         self.pnl = 0
         self.summary_pnl = 0
         self.pnl_list = []
+        self.hours_pnl=[]
         self.draw('BTCUSDT', 'TEST STARTUP', 70000,65000)
     
     def pnl_pic(self):
         while True:
             sleep(60*60)
+            b = 100
             # Сохранение значения в список
-            self.pnl_list.append(self.pnl)
+            for p in self.hours_pnl:
+                b = b + (b * p /100)
+            b = b - 100
+            self.pnl_list.append(b)
     
             # Построение графика
             plt.plot(self.pnl_list, marker='o', markersize=8, markerfacecolor='red', markeredgewidth=2, markeredgecolor='black')
@@ -40,9 +45,7 @@ class Utils(object):
             plt.grid(True)
             plt.savefig("pnl.png")
             img = open('pnl.png', 'rb')
-            self.pnl = 0
-            self.closed = 0
-            self.summary_pnl = 0
+            self.hours_pnl=[]
             self.tg.send_photo(channel_id, img, caption="<b>Hours P&L</b>", parse_mode='HTML')
 
         
@@ -125,7 +128,7 @@ class Utils(object):
                 self.closed += 1
                 self.summary_pnl += round(pnl, 2)
                 self.pnl = self.summary_pnl / self.closed
-                
+                self.hours_pnl.append(round(pnl, 2))
                 # Рисуем график с отмеченными точками входа и выхода
                 self.draw(symbol, 
                     icon + f' <b>{side.upper()}</b> <code>{symbol}</code>\n' +
@@ -144,3 +147,4 @@ class Utils(object):
                 break
 
             print(f'{symbol} Текущая цена: {round(current_price, 8)}, PnL: {round(pnl, 2)}%')
+

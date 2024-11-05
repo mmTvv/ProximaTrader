@@ -1,67 +1,169 @@
-import ta
+import ta, time
 import pandas as pd
 import traceback
+import numpy as np
+
+import pandas as pd
+import numpy as np
+
+def chandelier_exit(df, atr_period=1, atr_multiplier=1.85, use_close=True, await_bar_confirmation=True):
+    """
+    Chandelier Exit strategy in Python
+    :param df: DataFrame with columns ['open', 'high', 'low', 'close']
+    :param atr_period: ATR period
+    :param atr_multiplier: Multiplier for ATR to calculate stop levels
+    :param use_close: If True, use close price for extremum calculation
+    :param await_bar_confirmation: If True, waits for bar confirmation
+    :return: DataFrame with 'long_stop', 'short_stop', 'buy_signal', 'sell_signal' columns
+    """
+    high, low, close = df['High'], df['Low'], df['Close']
+    
+    # Calculate True Range and ATR as Pandas Series
+    tr = pd.Series(np.maximum.reduce([high - low, abs(high - close.shift(1)), abs(low - close.shift(1))]), index=df.index)
+    atr = atr_multiplier * tr.rolling(window=atr_period).mean()
+
+    # Calculate long and short stops
+    if use_close:
+        long_stop = close.rolling(window=atr_period).max() - atr
+        short_stop = close.rolling(window=atr_period).min() + atr
+    else:
+        long_stop = high.rolling(window=atr_period).max() - atr
+        short_stop = low.rolling(window=atr_period).min() + atr
+
+    # Adjust stop levels based on the previous bar's close
+    long_stop_prev = long_stop.shift(1)
+    long_stop = np.where(close.shift(1) > long_stop_prev, np.maximum(long_stop, long_stop_prev), long_stop)
+
+    short_stop_prev = short_stop.shift(1)
+    short_stop = np.where(close.shift(1) < short_stop_prev, np.minimum(short_stop, short_stop_prev), short_stop)
+
+    # Determine direction (1 for long, -1 for short)
+    dir_ = np.where(close > short_stop_prev, 1, np.where(close < long_stop_prev, -1, np.nan))
+    dir_ = pd.Series(dir_, index=df.index).ffill().fillna(1).astype(int)
+
+    # Generate buy and sell signals
+    buy_signal = (dir_ == 1) & (dir_.shift(1) == -1)
+    sell_signal = (dir_ == -1) & (dir_.shift(1) == 1)
+
+    # Prepare the result
+    result = pd.DataFrame({
+        'long_stop': long_stop,
+        'short_stop': short_stop,
+        'buy_signal': buy_signal,
+        'sell_signal': sell_signal,
+        'direction': dir_
+    })
+
+    if await_bar_confirmation:
+        result['buy_signal'] &= df['Close'] == df['Close']  # placeholder for bar confirmation
+        result['sell_signal'] &= df['Close'] == df['Close']  # placeholder for bar confirmation
+
+    return result
+
+
+# Основная функция для принятия торговых решений
+def CE(df, symbol):
+    current_price = df['Close'].iloc[-1]
+    chandelier = chandelier_exit(df)
+
+    # Проверка и исполнение торговых сигналов
+    if chandelier['buy_signal'].iloc[-1]:
+        print(f'{symbol} {chandelier.iloc[-1]}')
+        return {
+                'side': 'buy'
+            }
+    elif chandelier['sell_signal'].iloc[-1]:
+        print(f'{symbol} {chandelier.iloc[-1]}')
+        return {
+                'side': 'sell'
+            }
+    else:
+        return {
+                'side': 'none'
+            }
+
+def calculate_williams_r(df, length=21):
+    high = df['High'].rolling(window=length).max()
+    low = df['Low'].rolling(window=length).min()
+    williams_r = -100 * (high - df['Close']) / (high - low)
+    return williams_r
+
+# Функция расчета EMA от Williams %R
+def calculate_ema(series, length=13):
+    return series.ewm(span=length, adjust=False).mean()
+
+# Проверка условий перекупленности и перепроданности
+def check_conditions(williams_r, ema, window):
+    overbought = ema.iloc[window] > -20
+    oversold = ema.iloc[window] < -80
+    return overbought, oversold
+
+# Основная функция для принятия торговых решений
+def WILLAMS_R(df, symbol, williams_r_length=21, ema_length=13):
+    try:
+        williams_r = calculate_williams_r(df, williams_r_length)
+        ema = calculate_ema(williams_r, ema_length)
+
+        if len(ema) < 3 or len(williams_r) < 3:
+            return {
+                'side': 'none',
+                'overbought': [None, None],
+                'oversold': [None, None]
+            }
+
+        overbought_1, oversold_1 = check_conditions(williams_r, ema, -1)
+        overbought_2, oversold_2 = check_conditions(williams_r, ema, -2)
+
+        #print(f'{overbought_1} - {oversold_1} : {overbought_2} {oversold_2}')
+        if overbought_1 == True and overbought_2 == True:
+            return {
+                'side': 'sell',
+                'overbought': [overbought_1, overbought_2],
+                'oversold': [oversold_1, oversold_2],
+                }
+        elif oversold_1 == True and oversold_2 == True:
+            return {
+                'side': 'buy',
+                'overbought': [overbought_1, overbought_2],
+                'oversold': [oversold_1, oversold_2]
+                }
+        else:
+            return {
+                'side': 'none', 
+                'overbought': [overbought_1, overbought_2],
+                'oversold': [oversold_1, oversold_2]
+                }
+    except:
+        print(f'Error {symbol} as {e}')
+        return trading_decision(symbol)
 
 class Strategy:
     def __init__(self, bot):
         self.bot = bot
 
-    def order_blocks(self, data):
-        """ Определяем ордер-блоки (зоны, где умные деньги входили в рынок) на старшем таймфрейме """
-        high_volumes = data['Volume'].rolling(window=20).max()
-        order_block_zones = data.loc[data['Volume'] == high_volumes, ['High', 'Low']]
-        return order_block_zones
-
-    def bos(self, data):
-        """ Определяем Break of Structure (пробой структуры) """
-        highs = data['High'].rolling(window=20).max()
-        lows = data['Low'].rolling(window=20).min()
-        bos_signal = (data['Close'] > highs) | (data['Close'] < lows)
-        return bos_signal
-
-    def liquidity_zones(self, data):
-        """ Определяем зоны ликвидности """
-        liquidity_grabs = data['Low'].rolling(window=5).min() # Пример: минимумы могут указывать на захваты ликвидности
-        return liquidity_grabs
-
+    
     def main(self, symbol):
-        """ Анализируем несколько таймфреймов: дневной, 4 часа и 15 минут """
+        """ Анализируем """
         try:
-            # Получаем данные с разных таймфреймов
-            daily_data = self.bot.klines(symbol, timeframe='D', limit=200)
-            h4_data = self.bot.klines(symbol, timeframe='240', limit=200)
-            m15_data = self.bot.klines(symbol, timeframe='15', limit=200)
-            if daily_data is None or daily_data.empty or h4_data is None or h4_data.empty or m15_data is None or m15_data.empty:
-                raise ValueError(f"No data received for {symbol}")
-            # Анализируем ордер-блоки и пробои структуры на дневном графике
-            daily_order_blocks = self.order_blocks(daily_data)
-            daily_bos_signal = self.bos(daily_data)
-
-            # Анализируем средний таймфрейм (4 часа)
-            h4_order_blocks = self.order_blocks(h4_data)
-            h4_bos_signal = self.bos(h4_data)
-
-            # Анализируем мелкий таймфрейм (15 минут)
-            m15_liquidity_zones = self.liquidity_zones(m15_data)
-            m15_bos_signal = self.bos(m15_data)
-
-            current_price = m15_data['Close'].iloc[-1]
-
-            # Вход в лонг, если сигналы на всех таймфреймах совпадают
-            if daily_bos_signal.iloc[-1] and h4_bos_signal.iloc[-1] and m15_bos_signal.iloc[-1]:
+            df = self.bot.klines(symbol, '15', 50)
+            williams = WILLAMS_R(df, symbol)
+            chandelier = CE(df, symbol)
+            current_price = df['Close'].iloc[-1]
+            #print(f'{symbol} {chandelier} {williams}')
+            if williams['side'] == 'buy' and chandelier['side'] == 'buy':
                 return {
                     "side": 'long',
                     'price': current_price,
-                    'sl': m15_liquidity_zones.iloc[-1],  # Стоп-лосс на уровне ликвидности
+                    'sl': current_price - (current_price / 100),  # Стоп-лосс на уровне ликвидности
                     'tp': current_price + (current_price / 100)  # Тейк-профит
                 }
 
             # Вход в шорт, если сигналы на всех таймфреймах совпадают
-            elif not daily_bos_signal.iloc[-1] and not h4_bos_signal.iloc[-1] and not m15_bos_signal.iloc[-1]:
+            elif williams['side'] == 'sell' and chandelier['side'] == 'sell':
                 return {
                     "side": 'short',
                     'price': current_price,
-                    'sl': m15_liquidity_zones.iloc[-1],  # Стоп-лосс за зоной ликвидности
+                    'sl': current_price + (current_price / 100),  # Стоп-лосс за зоной ликвидности
                     'tp': current_price - (current_price / 100)  # Тейк-профит
                 }
 
@@ -70,4 +172,7 @@ class Strategy:
 
         except Exception as err:
             print(f'[ERROR]: {symbol} skipped due to {traceback.print_exc()}')
+            print(williams)
+            print(chandelier)
+            time.sleep(60)
             return {"side": "none", "price": None}
