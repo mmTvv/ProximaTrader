@@ -74,29 +74,25 @@ class Utils(object):
         img = open('candles.png', 'rb')
         self.tg.send_photo(channel_id, img, caption=text, parse_mode='HTML')
 
-    def watcher(self, symbol, side, start_price, tp, sl):
+    def watcher(self, symbol, side, start_price):
         time = datetime.now().timetuple()
         self.pos += 1
         max_pnl = 0
         entry_price = start_price
-        
+        pre_exit = False
+        exit_signal = False
+        #ТУТ БУДЕМ РАСЧИТЫВАТЬ СТОПЛОСС!!!!
+        sleep(90)
         while True:
-            sleep(3)
+            sleep(30)
             
-            # Получаем текущую цену
-            df = self.bot.klines(symbol=symbol, timeframe=60, limit=1)
-            try:
-                current_price = df['Close'].iloc[-1]
-            except:
-                sleep(5)
-                df = self.bot.klines(symbol=symbol, timeframe=60, limit=1)
-                current_price = df['Close'].iloc[-1]
-
+            data = self.strategy.main(symbol)
+            current_price = data['price']
             # Рассчитываем текущий PnL
             if side == 'long':
-                pnl = (current_price - entry_price) / entry_price * 100 * 10  # Плечо 10x
+                pnl = (current_price - entry_price) / entry_price * 100 * leverage  # Плечо 10x
             elif side == 'short':
-                pnl = (entry_price - current_price) / entry_price * 100 * 10
+                pnl = (entry_price - current_price) / entry_price * 100 * leverage
             else:
                 pnl = 0
 
@@ -105,22 +101,29 @@ class Utils(object):
                 max_pnl = pnl
 
             # Проверка на выход по стоп-лоссу или тейк-профиту
-            exit_signal = False
+            
             if side == 'long':
-                if current_price <= sl or current_price >= tp:
-                    exit_signal = True
-            elif side == 'short':
-                if current_price >= sl or current_price <= tp:
-                    exit_signal = True
+                if data['direction'] == -1:
+                    if pre_exit == True:
+                        exit_signal = True
+                    else:
+                        pre_exit = True
+                else: 
+                    pre_exit = False
 
-            # Проверяем стратегию на наличие сигнала для выхода (Chandelier Exit)
-            '''
-            long_ce, short_ce = self.strategy.chandelier_exit(df)
-            if side == 'long' and current_price > long_ce.iloc[-1]:
-                exit_signal = True
-            if side == 'short' and current_price < short_ce.iloc[-1]:
-                exit_signal = True
-                '''
+            elif side == 'short':
+                if data['direction'] == 1:
+                    if pre_exit == True:
+                        exit_signal = True
+                    else:
+                        pre_exit = True
+                else:
+                    pre_exit = False
+
+            if pnl < (max_pnl - 20):
+                exit_signal = True 
+            
+
             # Если сработал сигнал выхода, закрываем позицию
             if exit_signal:
                 icon = '✅' if pnl > 0 else '❌'

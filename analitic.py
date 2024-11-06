@@ -62,24 +62,27 @@ def chandelier_exit(df, atr_period=1, atr_multiplier=1.85, use_close=True, await
 
 
 # Основная функция для принятия торговых решений
-def CE(df, symbol):
+def CE(df, symbol, window=-1):
     current_price = df['Close'].iloc[-1]
     chandelier = chandelier_exit(df)
 
     # Проверка и исполнение торговых сигналов
     if chandelier['buy_signal'].iloc[-1]:
-        print(f'{symbol} {chandelier.iloc[-1]}')
+        #print(f'{symbol} {chandelier.iloc[-1]}')
         return {
-                'side': 'buy'
+                'side': 'buy',
+                'ce_direction': chandelier['direction'].iloc[window]
             }
     elif chandelier['sell_signal'].iloc[-1]:
-        print(f'{symbol} {chandelier.iloc[-1]}')
+        #print(f'{symbol} {chandelier.iloc[-1]}')
         return {
-                'side': 'sell'
+                'side': 'sell',
+                'ce_direction': chandelier['direction'].iloc[window]
             }
     else:
         return {
-                'side': 'none'
+                'side': 'none',
+                'ce_direction': chandelier['direction'].iloc[window]
             }
 
 def calculate_williams_r(df, length=21):
@@ -107,31 +110,32 @@ def WILLAMS_R(df, symbol, williams_r_length=21, ema_length=13):
         if len(ema) < 3 or len(williams_r) < 3:
             return {
                 'side': 'none',
-                'overbought': [None, None],
-                'oversold': [None, None]
+                'overbought': [None],
+                'oversold': [None]
             }
 
         overbought_1, oversold_1 = check_conditions(williams_r, ema, -1)
         overbought_2, oversold_2 = check_conditions(williams_r, ema, -2)
+        overbought_3, oversold_3 = check_conditions(williams_r, ema, -3)
 
         #print(f'{overbought_1} - {oversold_1} : {overbought_2} {oversold_2}')
-        if overbought_1 == True and overbought_2 == True:
+        if overbought_1 == True or overbought_2 == True or overbought_3 == True:
             return {
                 'side': 'sell',
-                'overbought': [overbought_1, overbought_2],
-                'oversold': [oversold_1, oversold_2],
+                'overbought': [overbought_1],
+                'oversold': [oversold_1],
                 }
-        elif oversold_1 == True and oversold_2 == True:
+        elif oversold_1 == True or oversold_2 == True or oversold_3 == True:
             return {
                 'side': 'buy',
-                'overbought': [overbought_1, overbought_2],
-                'oversold': [oversold_1, oversold_2]
+                'overbought': [overbought_1],
+                'oversold': [oversold_1]
                 }
         else:
             return {
                 'side': 'none', 
-                'overbought': [overbought_1, overbought_2],
-                'oversold': [oversold_1, oversold_2]
+                'overbought': [overbought_1],
+                'oversold': [oversold_1]
                 }
     except:
         print(f'Error {symbol} as {e}')
@@ -145,34 +149,35 @@ class Strategy:
     def main(self, symbol):
         """ Анализируем """
         try:
-            df = self.bot.klines(symbol, '15', 50)
+            df = self.bot.klines(symbol, 'D', 50)
             williams = WILLAMS_R(df, symbol)
-            chandelier = CE(df, symbol)
+            chandelier_1 = CE(df, symbol, -1)
+            chandelier_2 = CE(df, symbol, -2)
             current_price = df['Close'].iloc[-1]
             #print(f'{symbol} {chandelier} {williams}')
-            if williams['side'] == 'buy' and chandelier['side'] == 'buy':
+            if williams['side'] == 'buy' and chandelier_1['side'] == 'buy' and chandelier_2['ce_direction'] == 1:
                 return {
-                    "side": 'long',
-                    'price': current_price,
-                    'sl': current_price - (current_price / 100),  # Стоп-лосс на уровне ликвидности
-                    'tp': current_price + (current_price / 100)  # Тейк-профит
+                    "side": "long",
+                    "price": current_price,
+                    "direction": chandelier_1['ce_direction']
                 }
 
             # Вход в шорт, если сигналы на всех таймфреймах совпадают
-            elif williams['side'] == 'sell' and chandelier['side'] == 'sell':
+            elif williams['side'] == 'sell' and chandelier_1['side'] == 'sell' and chandelier_2['ce_direction'] == -1:
                 return {
-                    "side": 'short',
-                    'price': current_price,
-                    'sl': current_price + (current_price / 100),  # Стоп-лосс за зоной ликвидности
-                    'tp': current_price - (current_price / 100)  # Тейк-профит
+                    "side": "short",
+                    "price": current_price,
+                    "direction": chandelier_1['ce_direction']
                 }
 
             # Нет сигнала
-            return {"side": "none", "price": current_price}
+            return {
+                    "side": "none", 
+                    "price": current_price,
+                    "direction": chandelier_1['ce_direction']
+                }
 
         except Exception as err:
             print(f'[ERROR]: {symbol} skipped due to {traceback.print_exc()}')
-            print(williams)
-            print(chandelier)
             time.sleep(60)
             return {"side": "none", "price": None}
