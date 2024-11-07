@@ -63,17 +63,16 @@ def chandelier_exit(df, atr_period=1, atr_multiplier=1.85, use_close=True, await
 
 # Основная функция для принятия торговых решений
 def CE(df, symbol, window=-1):
-    current_price = df['Close'].iloc[-1]
     chandelier = chandelier_exit(df)
 
     # Проверка и исполнение торговых сигналов
-    if chandelier['buy_signal'].iloc[-1]:
+    if chandelier['buy_signal'].iloc[window]:
         #print(f'{symbol} {chandelier.iloc[-1]}')
         return {
                 'side': 'buy',
                 'ce_direction': chandelier['direction'].iloc[window]
             }
-    elif chandelier['sell_signal'].iloc[-1]:
+    elif chandelier['sell_signal'].iloc[window]:
         #print(f'{symbol} {chandelier.iloc[-1]}')
         return {
                 'side': 'sell',
@@ -118,14 +117,14 @@ def WILLAMS_R(df, symbol, williams_r_length=21, ema_length=13):
         overbought_2, oversold_2 = check_conditions(williams_r, ema, -2)
         overbought_3, oversold_3 = check_conditions(williams_r, ema, -3)
 
-        #print(f'{overbought_1} - {oversold_1} : {overbought_2} {oversold_2}')
-        if overbought_1 == True or overbought_2 == True or overbought_3 == True:
+        #print(f'{overbought_1} - {oversold_1} : {overbought_2} - {oversold_2} : {overbought_3} - {oversold_3}')
+        if (overbought_1 == False and overbought_2 == True and overbought_3 == True) or (overbought_1 == False and overbought_2 == False and overbought_3 == True):
             return {
                 'side': 'sell',
                 'overbought': [overbought_1],
                 'oversold': [oversold_1],
                 }
-        elif oversold_1 == True or oversold_2 == True or oversold_3 == True:
+        elif (oversold_1 == False and oversold_2 == True and oversold_3 == True) or (oversold_1 == False and oversold_2 == False and oversold_3 == True):
             return {
                 'side': 'buy',
                 'overbought': [overbought_1],
@@ -149,13 +148,20 @@ class Strategy:
     def main(self, symbol):
         """ Анализируем """
         try:
+            df_hours = self.bot.klines(symbol, 60, 50)
             df = self.bot.klines(symbol, 'D', 50)
+            if len(df) < 25:
+                break
             williams = WILLAMS_R(df, symbol)
             chandelier_1 = CE(df, symbol, -1)
             chandelier_2 = CE(df, symbol, -2)
+            chandelier_hours = CE(df_hours, symbol, -1)
             current_price = df['Close'].iloc[-1]
             #print(f'{symbol} {chandelier} {williams}')
-            if williams['side'] == 'buy' and chandelier_1['side'] == 'buy' and chandelier_2['ce_direction'] == 1:
+            #print(f"{symbol}  {williams['side'] == 'buy'}  {chandelier_2['side'] == 'buy'}  {chandelier_1['ce_direction'] == 1}")
+            #print(f"{symbol}  {williams['side'] == 'sell'}  {chandelier_2['side'] == 'sell'}  {chandelier_1['ce_direction'] == -1}\n\n")
+            if williams['side'] == 'buy' and chandelier_2['side'] == 'buy' and chandelier_1['ce_direction'] == 1 and chandelier_hours['ce_direction'] == 1:
+                
                 return {
                     "side": "long",
                     "price": current_price,
@@ -163,7 +169,8 @@ class Strategy:
                 }
 
             # Вход в шорт, если сигналы на всех таймфреймах совпадают
-            elif williams['side'] == 'sell' and chandelier_1['side'] == 'sell' and chandelier_2['ce_direction'] == -1:
+            elif williams['side'] == 'sell' and chandelier_2['side'] == 'sell' and chandelier_1['ce_direction'] == -1 and chandelier_hours['ce_direction'] == -1:
+                
                 return {
                     "side": "short",
                     "price": current_price,
