@@ -53,6 +53,9 @@ class ByBit:
             resp = resp.set_index('Time')
             resp = resp.astype(float)
             resp = resp[::-1]
+            if resp.empty:
+                sleep(120)
+                retrn self.klines(symbol, timeframe, limit)
             return resp
         except Exception as err:
             print(err)

@@ -151,7 +151,11 @@ class Strategy:
             df_hours = self.bot.klines(symbol, 60, 50)
             df = self.bot.klines(symbol, 'D', 50)
             if len(df) < 25:
-                break
+                return {
+                    "side": "none", 
+                    "price": current_price,
+                    "direction": chandelier_1['ce_direction']
+                }
             williams = WILLAMS_R(df, symbol)
             chandelier_1 = CE(df, symbol, -1)
             chandelier_2 = CE(df, symbol, -2)
